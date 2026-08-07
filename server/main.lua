@@ -11,7 +11,7 @@
 --]]
 
 local _API_HOST = "https://api.novacore.dk"
-local _LOCAL_FALLBACK_HOST = "http://127.0.0.1:3009"
+local _LOCAL_FALLBACK_HOST = "https://mtcore.novacore.dk"
 local _ADMIN_PANEL_DOMAIN = "https://adminpanel.novacore.dk"
 local _API_BEARER = "Bearer token-admin-secret-2026"
 
