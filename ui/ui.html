@@ -1,1 +1,71 @@
 <!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mt/NovaCore Admin Panel</title>
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <div id="panel" class="panel hidden">
+    <div class="panel-header">
+      <h1>MT/NovaCore Admin Panel</h1>
+      <button id="closeBtn" type="button">×</button>
+    </div>
+
+    <div class="panel-body">
+      <section class="card">
+        <h2>👥 Spiller</h2>
+        <div class="button-grid">
+          <button data-action="player:ban">Ban/Unban</button>
+          <button data-action="player:kick">Kick</button>
+          <button data-action="player:mute">Mute/Unmute</button>
+          <button data-action="player:warn">Advarsel</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>📍 Handlinger</h2>
+        <div class="button-grid">
+          <button data-action="player:teleport">Teleport til spiller</button>
+          <button data-action="player:bring">Bring spiller</button>
+          <button data-action="player:revive">Revive</button>
+          <button data-action="player:heal">Heal</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🚗 Køretøjer</h2>
+        <div class="button-grid">
+          <button data-action="vehicle:spawn">Spawn køretøj</button>
+          <button data-action="vehicle:repair">Repair</button>
+          <button data-action="vehicle:fuel">Fyld benzin</button>
+          <button data-action="vehicle:delete">Delete nærmeste</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🌍 Verden</h2>
+        <div class="button-grid">
+          <button data-action="world:weather">Skift vejr</button>
+          <button data-action="world:time">Skift tid</button>
+          <button data-action="world:restart">Restart ressourcer</button>
+          <button data-action="world:announce">Send announcement</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>🛡️ Staff Mode</h2>
+        <div class="button-grid">
+          <button data-action="staff:noclip">Noclip</button>
+          <button data-action="staff:spectate">Spectate</button>
+          <button data-action="staff:invisible">Invisible</button>
+          <button data-action="staff:godmode">Godmode</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script src="assets/script.js"></script>
+</body>
+</html>
