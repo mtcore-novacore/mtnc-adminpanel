@@ -1,21 +1,25 @@
 # mtnc-adminpanel
 
-A FiveM admin panel with support for **vRP**, **ESX**, and **QBCore**.
+A simple and powerful FiveM admin panel with support for **vRP**, **ESX**, and **QBCore**.
 
-## Requirements
+## 📦 Requirements
 
-- Database required.
-- MariaDB is recommended.
+- Database required
+- MariaDB recommended
 
-## Installation
+## 🚀 Installation
 
-1. Place the script in your `resources` folder.
+1. Drag `mtnc-adminpanel` into your `resources` folder.
 2. Add this to your `server.cfg`:
 
 ```cfg
 ensure mtnc-adminpanel
 ```
 
-3. Add your license key to `licensekey.lua`.
+3. Open `licensekey.lua` and paste in your license key.
 
-> **Note:** Don't forget to add your license key before starting the server.
+## ⚠️ Important
+
+No license key = No admin panel. 😉
+
+Enjoy!
