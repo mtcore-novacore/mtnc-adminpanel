@@ -13,4 +13,6 @@
 --]]
 
 
-"licensekey"
+MTNCDLC = {
+    ["key"] = "licensekey" 
+}
