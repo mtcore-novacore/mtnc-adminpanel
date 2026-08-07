@@ -1,152 +1,198 @@
-local function getPlayerIdentifiers(src)
-    local ids = {}
-    for _, id in ipairs(GetPlayerIdentifiers(src) or {}) do
-        ids[id] = true
-    end
-    return ids
-end
+--[[
+  ███╗   ███╗████████╗███╗   ██╗ ██████╗
+  ████╗ ████║╚══██╔══╝████╗  ██║██╔════╝
+  ██╔████╔██║   ██║   ██╔██╗ ██║██║
+  ██║╚██╔╝██║   ██║   ██║╚██╗██║██║
+  ██║ ╚═╝ ██║   ██║   ██║ ╚████║╚██████╗
+  ╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
 
-local function safeDecodeJson(body)
-    if not body or body == "" then
-        return nil
-    end
+  MTNC Admin Panel — FiveM Server Engine v2.5.0
+  Modular Multi-Port & DDoS Shield Connected
+--]]
 
-    local success, decoded = pcall(function()
-        return json.decode(body)
-    end)
+local _API_HOST = "https://api.novacore.dk"
+local _LOCAL_FALLBACK_HOST = "http://127.0.0.1:3009"
+local _ADMIN_PANEL_DOMAIN = "https://adminpanel.novacore.dk"
+local _API_BEARER = "Bearer token-admin-secret-2026"
 
-    if success then
-        return decoded
-    end
+local isLicenseValid = false
+local currentServerId = nil
+local adminPanelUrl = nil
 
-    return nil
-end
-
-local function syncServerWithApi()
-    if not Config.api or not Config.api.enabled then
-        return
-    end
-
-    local payload = {
-        id = "fivem-server-local",
-        name = Config.api.serverName or "NovaCore FiveM Server",
-        ip = "127.0.0.1",
-        port = tonumber(GetConvar("sv_port", "30120")) or 30120,
-        region = "local",
-        status = "ONLINE",
-        role = "MASTER",
-        licenseKey = GetConvar("sv_licenseKey", "MTNC-LOCAL-LICENSE"),
-        latencyMs = 3,
-        version = GetResourceMetadata(GetCurrentResourceName(), "version") or "unknown",
-        syncState = {
-            inSync = true,
-            lastSyncedAt = os.date("!%Y-%m-%dT%H:%M:%SZ"),
-            versionHash = "fivem-local-sync"
-        }
+-- ── DEDIKERET SERVER-SIDE HANDSHAKE FUNKTION ────────────
+function RequestServerData(action, payload, cb)
+    local endpointMap = {
+        validateLicense = "/api/license/validate",
+        registerServer  = "/api/servers/register",
+        syncPlayers     = "/api/servers/players",
+        supportRequest  = "/api/support/request",
+        auditLog        = "/api/logs",
+        metrics         = "/api/metrics",
+        ddosStatus      = "/api/ddos/status",
     }
 
-    PerformHttpRequest(Config.api.baseUrl .. (Config.api.registerEndpoint or "/api/servers/register"), function(statusCode, body)
-        if statusCode == 200 then
-            print("[mtnc-adminpanel] Server synced with API successfully.")
-            return
-        end
+    local path = endpointMap[action] or ("/api/" .. action)
+    local url  = _API_HOST .. path
+    local postBody = payload and json.encode(payload) or "{}"
+    local timestamp = os.time()
 
-        print(string.format("[mtnc-adminpanel] API sync failed with status %s", tostring(statusCode)))
-    end, "POST", json.encode(payload), { ["Content-Type"] = "application/json" })
-end
-
-local function heartbeatToApi()
-    if not Config.api or not Config.api.enabled then
-        return
-    end
-
-    local payload = {
-        id = "fivem-server-local",
-        latencyMs = 3
+    local headers = {
+        ["Content-Type"]        = "application/json",
+        ["Authorization"]       = _API_BEARER,
+        ["X-MTNC-Node-Action"]  = action,
+        ["X-MTNC-Timestamp"]    = tostring(timestamp),
+        ["X-MTNC-License"]      = _G.LicenseKey or Config.licenseKey or "",
     }
 
-    PerformHttpRequest(Config.api.baseUrl .. (Config.api.heartbeatEndpoint or "/api/servers/heartbeat"), function(statusCode, body)
-        if statusCode ~= 200 then
-            print(string.format("[mtnc-adminpanel] API heartbeat failed with status %s", tostring(statusCode)))
-        end
-    end, "POST", json.encode(payload), { ["Content-Type"] = "application/json" })
-end
-
-local function getDatabaseAdminRole(src)
-    if not Config.permissions or not Config.permissions.useDatabaseUsers then
-        return nil
-    end
-
-    local ids = getPlayerIdentifiers(src)
-    local steam = nil
-    for _, id in ipairs(ids) do
-        if string.sub(id or "", 1, 6) == "steam:" then
-            steam = id
-            break
-        end
-    end
-
-    if not steam then
-        return nil
-    end
-
-    local result = MySQL.Sync.fetchAll('SELECT role, is_active FROM mtnc_admin_users WHERE steam = @steam LIMIT 1', {
-        ['@steam'] = steam
-    })
-
-    if result and result[1] then
-        if result[1].is_active ~= 1 then
-            return nil
-        end
-        return result[1].role
-    end
-
-    return nil
-end
-
-local function hasAccess(src)
-    if Config.permissions and Config.permissions.allowAll then
-        return true
-    end
-
-    if Config.general and Config.general.allowAll then
-        return true
-    end
-
-    local ids = getPlayerIdentifiers(src)
-    for _, steamId in ipairs(Config.permissions and Config.permissions.allowedSteamIds or Config.allowedSteamIds or {}) do
-        if ids[steamId] then
-            return true
-        end
-    end
-
-    local dbRole = getDatabaseAdminRole(src)
-    if dbRole then
-        return true
-    end
-
-    if Config.permissions and Config.permissions.enableFrameworkCheck then
-        if Config.framework == "esx" and GetResourceState("es_extended") == "started" then
-            local xPlayer = exports["es_extended"]:getPlayerFromId(src)
-            if xPlayer then
-                local group = xPlayer.getGroup and xPlayer.getGroup() or nil
-                for _, allowedGroup in ipairs(Config.permissions.esxGroups or {}) do
-                    if group == allowedGroup then
-                        return true
-                    end
-                end
+    PerformHttpRequest(
+        url,
+        function(statusCode, responseText, _)
+            if statusCode >= 200 and statusCode < 300 and responseText then
+                local data = json.decode(responseText)
+                if cb then cb(true, data, statusCode) end
+            else
+                -- Fallback to local host if tunnel is in local dev mode
+                PerformHttpRequest(
+                    _LOCAL_FALLBACK_HOST .. path,
+                    function(fallbackCode, fallbackText, _)
+                        if fallbackCode >= 200 and fallbackCode < 300 and fallbackText then
+                            local data = json.decode(fallbackText)
+                            if cb then cb(true, data, fallbackCode) end
+                        else
+                            if cb then cb(false, nil, statusCode or fallbackCode) end
+                        end
+                    end,
+                    payload and "POST" or "GET",
+                    postBody,
+                    headers
+                )
             end
-        end
+        end,
+        payload and "POST" or "GET",
+        postBody,
+        headers
+    )
+end
 
-        if Config.framework == "qbcore" and GetResourceState("qb-core") == "started" then
-            local player = exports["qb-core"]:GetPlayer(src)
-            if player then
-                local job = player.PlayerData and player.PlayerData.job and player.PlayerData.job.name or nil
-                for _, allowedRole in ipairs(Config.permissions.qbRoles or {}) do
-                    if job == allowedRole then
-                        return true
-                    end
+_G.RequestServerData = RequestServerData
+
+-- ── VALIDER LICENS OG REGISTRER SERVER NODE ───────────
+local function validateAndRegisterServer(cb)
+    local key = _G.LicenseKey or Config.licenseKey or ""
+
+    if key == "" then
+        print("^1[MTNC-ADMIN] ❌ INGEN LICENSNØGLE FUNDET I LICENSEKEY.LUA!^7")
+        isLicenseValid = false
+        if cb then cb(false) end
+        return
+    end
+
+    RequestServerData("validateLicense", { licenseKey = key }, function(success, data, code)
+        if success and data and data.valid then
+            isLicenseValid = true
+
+            local serverName = GetConvar("sv_hostname", "FiveM Main Server")
+            RequestServerData("registerServer", {
+                licenseKey = key,
+                name       = serverName,
+                ip         = "127.0.0.1",
+                port       = GetConvarInt("port", 30120),
+                maxPlayers = GetConvarInt("sv_maxclients", 64),
+            }, function(regOk, regData)
+                if regOk and regData and regData.server then
+                    currentServerId = regData.server.id
+                    adminPanelUrl   = string.format("%s/%s", _ADMIN_PANEL_DOMAIN, currentServerId)
+
+                    print("^2=========================================================^7")
+                    print(string.format("^2[MTNC-ADMIN] ✅ SERVER NODE ANALYSERET OG FORBUNDET!^7"))
+                    print(string.format("^2[MTNC-ADMIN] 🌐 DEDIKERET ADMIN PANEL:^7 ^3%s^7", adminPanelUrl))
+                    print(string.format("^2[MTNC-ADMIN] 🔑 LICENS TIER: %s | KUNDE: %s^7", data.license.tier, data.license.issuedTo))
+                    print(string.format("^2[MTNC-ADMIN] 🛡️ DDOS SHIELD: AKTIVT & OVERVÅGER^7"))
+                    print("^2=========================================================^7")
                 end
+            end)
+
+            if cb then cb(true) end
+        else
+            isLicenseValid = false
+            print(string.format("^1[MTNC-ADMIN] ❌ LICENS AFVIST: %s (HTTP %d)^7", data and data.reason or "Ugyldig", code or 0))
+            if cb then cb(false) end
+        end
+    end)
+end
+
+AddEventHandler("onResourceStart", function(resourceName)
+    if GetCurrentResourceName() ~= resourceName then return end
+    print("^3[MTNC-ADMIN] Læser licensekey.lua og forbinder til NovaCore Gateway...^7")
+    validateAndRegisterServer()
+end)
+
+-- ── SEND SOS HJÆLPEANMODNING TIL SUPERADMIN ────────────
+RegisterCommand("sos", function(src, args, raw)
+    local msg = table.concat(args, " ")
+    if msg == "" then
+        print("^1Brug: /sos [beskrivelse af hvad der driller]^7")
+        return
+    end
+
+    local sender = (src > 0) and GetPlayerName(src) or "Server Console"
+    RequestServerData("supportRequest", {
+        nodeId         = currentServerId or "node_fivem_server",
+        serverName     = GetConvar("sv_hostname", "FiveM Node"),
+        senderUsername = sender,
+        category       = "FiveM In-Game SOS",
+        priority       = "🚨 KRITISK SOS",
+        subject        = "Hjælp anmodet via in-game /sos",
+        message        = msg,
+    }, function(ok, data)
+        if ok then
+            print(string.format("^2[MTNC-ADMIN] 🚨 SOS anmodning sendt direkte til SuperAdmin på MTCore! (ID: %s)^7", data.ticket and data.ticket.id or "-"))
+        else
+            print("^1[MTNC-ADMIN] Kunne ikke sende SOS anmodning til MTCore.^7")
+        end
+    end)
+end, true)
+
+-- ── PERIODISK SYNKRONISERING AF LIVE SPILLERE ──────────
+CreateThread(function()
+    while true do
+        Wait(15000)
+        if isLicenseValid and currentServerId then
+            local players = {}
+            for _, pid in ipairs(GetPlayers()) do
+                table.insert(players, {
+                    id   = pid,
+                    name = GetPlayerName(pid),
+                    ping = GetPlayerPing(pid),
+                })
+            end
+
+            RequestServerData("syncPlayers", {
+                serverId = currentServerId,
+                count    = #players,
+                players  = players,
+            })
+        end
+    end
+end)
+
+-- ── PERMISSION CHECK ──────────────────────────────────
+local function hasAccess(src)
+    if not isLicenseValid then return false end
+    if Config.permissions and Config.permissions.allowAll then return true end
+
+    -- Ace permissions
+    if IsPlayerAceAllowed(tostring(src), Config.permissions.acePermission or "mtnc.admin") then
+        return true
+    end
+
+    -- Framework check (ESX / QBCore)
+    if Config.framework == "esx" and GetResourceState("es_extended") == "started" then
+        local xPlayer = exports["es_extended"]:getPlayerFromId(src)
+        if xPlayer then
+            local group = xPlayer.getGroup and xPlayer.getGroup() or nil
+            for _, allowed in ipairs(Config.permissions.esxGroups or {}) do
+                if group == allowed then return true end
             end
         end
     end
@@ -154,34 +200,19 @@ local function hasAccess(src)
     return false
 end
 
-Citizen.CreateThread(function()
-    Citizen.Wait(2000)
-    syncServerWithApi()
-
-    while true do
-        Citizen.Wait((Config.api and Config.api.timeout or 5000) + 25000)
-        heartbeatToApi()
-    end
-end)
-
-RegisterNetEvent("mtnc:requestAdminPanel")
-AddEventHandler("mtnc:requestAdminPanel", function()
+-- ── ÅBN ADMIN NUI MENU ────────────────────────────────
+RegisterNetEvent("mtnc:server:requestOpen", function()
     local src = source
-    if not hasAccess(src) then
-        TriggerClientEvent("mtnc:notify", src, "Du har ikke adgang til admin-panelet.")
-        return
+    if hasAccess(src) then
+        TriggerClientEvent("mtnc:client:openMenu", src, {
+            serverName = GetConvar("sv_hostname", "FiveM Node"),
+            panelUrl   = adminPanelUrl or _ADMIN_PANEL_DOMAIN,
+            nodeId     = currentServerId,
+        })
+    else
+        TriggerClientEvent("chat:addMessage", src, {
+            color = { 255, 50, 50 },
+            args  = { "MTNC", "Du har ikke tilladelse til at åbne admin panelet." }
+        })
     end
-
-    TriggerClientEvent("mtnc:openAdminPanel", src)
-end)
-
-RegisterNetEvent("mtnc:adminAction")
-AddEventHandler("mtnc:adminAction", function(action)
-    local src = source
-    if not hasAccess(src) then
-        return
-    end
-
-    print(('[mtnc-adminpanel] %s (%s) triggered action: %s'):format(GetPlayerName(src), src, tostring(action)))
-    TriggerClientEvent("mtnc:notify", src, string.format("Handling udført: %s", tostring(action)))
 end)

@@ -2,24 +2,25 @@ fx_version 'cerulean'
 games { 'gta5' }
 
 author 'NovaCore-MTCore'
-description 'A panel supports vrp-esx-qbcore'
-version '1.0.0'
+description 'MTNC Admin Panel — Remote Hosted NUI Admin Menu'
+version '2.5.0'
 
 client_scripts {
   'config.lua',
-  'client/main.lua'
+  'client/main.lua',
+  'client/vehicles.lua',
+  'client/staff.lua',
 }
 
 server_scripts {
-  '@mysql-async/lib/MySQL.lua',
+  'licensekey.lua',
   'config.lua',
-  'server/*.lua'
+  'server/main.lua',
+  'server/players.lua',
+  'server/world.lua',
+  'server/economy.lua',
+  'server/logs.lua',
 }
 
-ui_page 'ui/ui.html'
-
-files {
-  'ui/ui.html',
-  'ui/assets/style.css',
-  'ui/assets/script.js'
-}
+-- Hosted NUI Web Application URL (webserver)
+ui_page 'http://127.0.0.1:3009/nui'

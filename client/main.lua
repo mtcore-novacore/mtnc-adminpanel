@@ -1,122 +1,156 @@
-local isPanelOpen = false
-local panelCooldown = false
+-- ──────────────────────────────────────────────────────
+--  MTNC Admin Panel — Client Main
+--  Håndterer: NUI toggle, keybind, callbacks fra UI
+-- ──────────────────────────────────────────────────────
 
-local function setPanelVisible(visible)
+local isPanelOpen = false
+local adminData   = nil  -- Gemmer admin info fra server
+
+-- ── HELPER: Åbn/luk NUI panel ─────────────────────────
+local function setPanelVisible(visible, data)
     isPanelOpen = visible
     SetNuiFocus(visible, visible)
     SendNUIMessage({
-        type = "setVisible",
-        visible = visible
+        type    = "setVisible",
+        visible = visible,
+        data    = data or {}
     })
 end
 
-local function safeDecodeJson(body)
-    if not body or body == "" then
-        return nil
-    end
-
-    local success, decoded = pcall(function()
-        return json.decode(body)
-    end)
-
-    if success then
-        return decoded
-    end
-
-    return nil
-end
-
-local function syncClientWithApi()
-    if not Config.api or not Config.api.enabled then
-        return
-    end
-
-    local apiUrl = Config.api.baseUrl .. (Config.api.configEndpoint or "/api/config")
-    PerformHttpRequest(apiUrl, function(statusCode, body)
-        if statusCode == 200 then
-            local decoded = safeDecodeJson(body)
-            if decoded then
-                print("[mtnc-adminpanel] Client synced with API successfully.")
-                SendNUIMessage({
-                    type = "notify",
-                    message = "API-forbindelse aktiv"
-                })
-            end
-            return
-        end
-
-        print(string.format("[mtnc-adminpanel] Client API sync failed with status %s", tostring(statusCode)))
-    end, "GET", "", { ["Content-Type"] = "application/json" })
-end
-
-local function togglePanel()
-    if panelCooldown then
-        return
-    end
-
-    panelCooldown = true
-    Citizen.SetTimeout(250, function()
-        panelCooldown = false
-    end)
-
-    if isPanelOpen then
-        setPanelVisible(false)
-    else
-        TriggerServerEvent("mtnc:requestAdminPanel")
-    end
-end
-
-RegisterNetEvent("mtnc:openAdminPanel")
-AddEventHandler("mtnc:openAdminPanel", function()
-    setPanelVisible(true)
+-- ── EVENTS FRA SERVER ─────────────────────────────────
+RegisterNetEvent("mtnc:openPanel")
+AddEventHandler("mtnc:openPanel", function(data)
+    adminData = data
+    setPanelVisible(true, data)
 end)
 
-RegisterNetEvent("mtnc:closeAdminPanel")
-AddEventHandler("mtnc:closeAdminPanel", function()
+RegisterNetEvent("mtnc:closePanel")
+AddEventHandler("mtnc:closePanel", function()
     setPanelVisible(false)
 end)
 
-RegisterNetEvent("mtnc:notify")
-AddEventHandler("mtnc:notify", function(message)
+RegisterNetEvent("mtnc:updatePlayerList")
+AddEventHandler("mtnc:updatePlayerList", function(players)
     SendNUIMessage({
-        type = "notify",
+        type    = "updatePlayers",
+        players = players
+    })
+end)
+
+RegisterNetEvent("mtnc:notify")
+AddEventHandler("mtnc:notify", function(message, ntype)
+    SendNUIMessage({
+        type    = "notify",
+        message = message,
+        ntype   = ntype or "info"
+    })
+end)
+
+RegisterNetEvent("mtnc:actionResult")
+AddEventHandler("mtnc:actionResult", function(success, message)
+    SendNUIMessage({
+        type    = "actionResult",
+        success = success,
         message = message
     })
 end)
 
+RegisterNetEvent("mtnc:logsResult")
+AddEventHandler("mtnc:logsResult", function(logs)
+    SendNUIMessage({
+        type = "updateLogs",
+        logs = logs
+    })
+end)
+
+-- ── NUI CALLBACKS ─────────────────────────────────────
+
+-- Luk panel
 RegisterNUICallback("closePanel", function(_, cb)
     setPanelVisible(false)
     if cb then cb("ok") end
 end)
 
-RegisterNUICallback("performAction", function(data, cb)
-    local action = data and data.action or "unknown"
-    TriggerServerEvent("mtnc:adminAction", action)
-    SendNUIMessage({
-        type = "notify",
-        message = "Sender handling: " .. action
-    })
+-- Anmod om opdateret spillerliste
+RegisterNUICallback("getPlayers", function(_, cb)
+    TriggerServerEvent("mtnc:requestPlayers")
     if cb then cb("ok") end
 end)
 
-Citizen.CreateThread(function()
-    Citizen.Wait(1500)
-    syncClientWithApi()
+-- Anmod om logs fra backend
+RegisterNUICallback("getLogs", function(data, cb)
+    TriggerServerEvent("mtnc:requestLogs", data)
+    if cb then cb("ok") end
 end)
 
+-- Spiller handlinger (kick, ban, freeze, teleport etc.)
+RegisterNUICallback("playerAction", function(data, cb)
+    TriggerServerEvent("mtnc:playerAction", data)
+    if cb then cb("ok") end
+end)
+
+-- Verden handlinger (vejr, tid, restart, announcement)
+RegisterNUICallback("worldAction", function(data, cb)
+    TriggerServerEvent("mtnc:worldAction", data)
+    if cb then cb("ok") end
+end)
+
+-- Økonomi handlinger (give/remove penge)
+RegisterNUICallback("economyAction", function(data, cb)
+    TriggerServerEvent("mtnc:economyAction", data)
+    if cb then cb("ok") end
+end)
+
+-- Vehicle spawn (client-side)
+RegisterNUICallback("spawnVehicle", function(data, cb)
+    TriggerEvent("mtnc:client:spawnVehicle", data.model)
+    if cb then cb("ok") end
+end)
+
+-- Delete nearest vehicle (client-side)
+RegisterNUICallback("deleteVehicle", function(_, cb)
+    TriggerEvent("mtnc:client:deleteVehicle")
+    if cb then cb("ok") end
+end)
+
+-- Repair vehicle (client-side)
+RegisterNUICallback("repairVehicle", function(_, cb)
+    TriggerEvent("mtnc:client:repairVehicle")
+    if cb then cb("ok") end
+end)
+
+-- Staff tools (noclip, godmode, invisible, spectate)
+RegisterNUICallback("staffAction", function(data, cb)
+    TriggerEvent("mtnc:client:staffAction", data)
+    if cb then cb("ok") end
+end)
+
+-- ── KEYBIND & KOMMANDO ────────────────────────────────
 Citizen.CreateThread(function()
-    RegisterCommand(Config.openCMD or "admin", function()
-        togglePanel()
+    -- /admin kommando
+    RegisterCommand(Config.general.openCommand or "admin", function()
+        if isPanelOpen then
+            setPanelVisible(false)
+        else
+            TriggerServerEvent("mtnc:requestPanel")
+        end
     end, false)
 
+    -- Numpad 8 (eller konfigureret hotkey) toggle
+    RegisterKeyMapping(
+        Config.general.openCommand or "admin",
+        "Åbn MTNC Admin Panel",
+        "keyboard",
+        "NUMPAD8"
+    )
+
+    -- Esc / close key mens panel er åbent
     while true do
         Citizen.Wait(0)
-        if isPanelOpen and IsControlJustReleased(0, 322) then
-            setPanelVisible(false)
-        end
-
-        if IsControlJustReleased(0, tonumber(Config.hotkey or 104) or 104) then
-            togglePanel()
+        if isPanelOpen then
+            if IsControlJustReleased(0, Config.general.closeKey or 322) then
+                setPanelVisible(false)
+            end
         end
     end
 end)

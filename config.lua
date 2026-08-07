@@ -1,145 +1,131 @@
 --[[
 #########################################################
 
-# ███╗   ███╗████████╗███╗   ██╗ ██████╗
-# ████╗ ████║╚══██╔══╝████╗  ██║██╔════╝
-# ██╔████╔██║   ██║   ██╔██╗ ██║██║     
-# ██║╚██╔╝██║   ██║   ██║╚██╗██║██║     
-# ██║ ╚═╝ ██║   ██║   ██║ ╚████║╚██████╗
-# ╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
-                                      
+  ███╗   ███╗████████╗███╗   ██╗ ██████╗
+  ████╗ ████║╚══██╔══╝████╗  ██║██╔════╝
+  ██╔████╔██║   ██║   ██╔██╗ ██║██║
+  ██║╚██╔╝██║   ██║   ██║╚██╗██║██║
+  ██║ ╚═╝ ██║   ██║   ██║ ╚████║╚██████╗
+  ╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
 
+  MTNC Admin Panel v2.5.0 — NovaCore
 #########################################################
 --]]
 
 Config = {}
 
-Config.framework = "esx" -- esx // vrp // qbcore
+-- ── LICENSNØGLE (PÅKRÆVET) ─────────────────────────────
+-- Du skal have en gyldig licensnøgle for at køre admin-panelet.
+-- Licensen valideres mod NovaCore API serveren ved opstart.
+Config.licenseKey = "MTNC-ENT-2026-9988-X7"
 
+-- ── FRAMEWORK ─────────────────────────────────────────
+-- "esx"        → es_extended
+-- "qbcore"     → qb-core
+-- "vrp"        → vrp
+-- "standalone" → ingen framework (vanilla FiveM)
+Config.framework = "esx"
 
-
-
-
+-- ── GENERELT ──────────────────────────────────────────
 Config.general = {
-    openCommand = "admin",
-    hotkey = "104",
-    allowAll = false,
-    debug = false,
-    useMySQL = true,
-    useLogs = true,
-    uiTitle = "NovaCore Admin Panel",
-    closeKey = 322,
-    notifySound = true
+    openCommand  = "admin",       -- /admin kommando
+    hotkey       = 104,           -- Numpad 8
+    uiTitle      = "MTNC Admin Panel",
+    closeKey     = 322,           -- ESC lukker menuen
+    notifySound  = true,
+    debug        = false,
 }
 
-Config.api = {
-    enabled = true,
-    baseUrl = "http://127.0.0.1:3009",
-    healthEndpoint = "/api/health",
-    configEndpoint = "/api/config",
-    registerEndpoint = "/api/servers/register",
-    heartbeatEndpoint = "/api/servers/heartbeat",
-    timeout = 5000,
-    serverName = "NovaCore FiveM Server"
-}
-
+-- ── PERMISSIONS ───────────────────────────────────────
 Config.permissions = {
-    allowAll = false,
+    allowAll     = false,         -- Sæt true for at give alle adgang (KUN til test!)
+
+    -- Steam IDs der altid har adgang (uanset framework)
     allowedSteamIds = {
-        -- "steam:11000010abcdefg"
+        -- "steam:110000112345678",
     },
+
+    -- ESX grupper med adgang
     esxGroups = {
         "superadmin",
-        "admin"
+        "admin",
+        "moderator",
     },
+
+    -- QBCore jobs/roles med adgang
     qbRoles = {
         "god",
-        "admin"
-    },
-    vrpGroups = {
         "admin",
-        "moderator"
     },
+
+    -- Ace permissions (native FiveM)
+    acePermission = "mtnc.admin",
+
     enableFrameworkCheck = true,
-    useDatabaseUsers = true,
-    defaultRole = "moderator"
 }
 
+-- ── HVAD ER AKTIVERET ─────────────────────────────────
 Config.categories = {
-    player = true,
-    vehicle = true,
-    world = true,
-    character = true,
-    staff = true,
-    logs = true,
-    settings = true
+    players   = true,   -- Spiller management
+    vehicles  = true,   -- Køretøjer
+    world     = true,   -- Vejr, tid, resources
+    economy   = true,   -- Penge & items
+    staff     = true,   -- Staff tools (noclip, spectate etc.)
+    logs      = true,   -- Log viewer fra backend
 }
 
+-- ── HANDLINGER ────────────────────────────────────────
 Config.actions = {
     player = {
-        ban = true,
-        kick = true,
-        mute = true,
-        warn = true,
+        ban      = true,
+        kick     = true,
+        warn     = true,
+        freeze   = true,
+        revive   = true,
+        heal     = true,
         teleport = true,
-        bring = true,
-        revive = true,
-        heal = true,
-        freeze = true,
-        godmode = true
+        bring    = true,
+        godmode  = true,
     },
     vehicle = {
-        spawn = true,
-        repair = true,
-        fuel = true,
-        delete = true,
-        giveKeys = true,
-        plate = true
+        spawn    = true,
+        repair   = true,
+        fuel     = true,
+        delete   = true,
+        plate    = true,
     },
     world = {
-        weather = true,
-        time = true,
-        restartResources = true,
-        startEvents = true,
-        announcement = true
+        weather      = true,
+        time         = true,
+        restartRes   = true,
+        announcement = true,
     },
-    character = {
-        money = true,
-        bankMoney = true,
-        giveItems = true,
-        giveWeapons = true,
-        changeOutfit = true,
-        giveXp = true
+    economy = {
+        giveCash     = true,
+        giveBank     = true,
+        removeMoneyC = true,
+        removeMoneyB = true,
     },
     staff = {
-        noclip = true,
-        spectate = true,
+        noclip    = true,
+        spectate  = true,
         invisible = true,
-        freecam = true,
-        showPlayerNames = true,
-        blips = true,
-        godmode = true,
-        superJump = true
+        godmode   = true,
+        freecam   = true,
     },
-    logs = {
-        staffLogs = true,
-        chatLogs = true,
-        banLogs = true,
-        kickLogs = true,
-        itemLogs = true,
-        moneyLogs = true
-    }
 }
 
+-- ── VEJR MULIGHEDER ───────────────────────────────────
+Config.weatherTypes = {
+    "CLEAR", "EXTRASUNNY", "CLOUDS", "OVERCAST",
+    "RAIN", "THUNDER", "FOGGY", "SNOWLIGHT", "BLIZZARD",
+}
+
+-- ── BESKEDER ──────────────────────────────────────────
 Config.messages = {
-    noAccess = "Du har ikke adgang til admin-panelet.",
-    actionSuccess = "Handling udført.",
-    actionDenied = "Du har ikke tilladelse til denne handling."
+    noAccess      = "❌ Du har ikke adgang til admin-panelet.",
+    actionSuccess = "✅ Handling udført.",
+    actionDenied  = "❌ Du har ikke tilladelse til denne handling.",
+    playerGone    = "❌ Spiller ikke længere online.",
+    invalidLicense= "❌ Ugyldig eller udløbet licensnøgle! Kontakt NovaCore support.",
 }
-
-Config.openCMD = Config.general.openCommand
-Config.hotkey = Config.general.hotkey
-Config.allowAll = Config.permissions.allowAll
-Config.allowedSteamIds = Config.permissions.allowedSteamIds
-
-
