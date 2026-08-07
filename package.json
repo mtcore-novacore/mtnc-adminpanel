@@ -1,0 +1,9 @@
+{
+  "name": "mtnc-adminpanel",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "check:ports": "node scripts/check-ports.js",
+    "start:check": "node scripts/check-ports.js"
+  }
+}

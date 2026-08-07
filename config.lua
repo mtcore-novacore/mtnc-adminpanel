@@ -32,6 +32,17 @@ Config.general = {
     notifySound = true
 }
 
+Config.api = {
+    enabled = true,
+    baseUrl = "http://127.0.0.1:3009",
+    healthEndpoint = "/api/health",
+    configEndpoint = "/api/config",
+    registerEndpoint = "/api/servers/register",
+    heartbeatEndpoint = "/api/servers/heartbeat",
+    timeout = 5000,
+    serverName = "NovaCore FiveM Server"
+}
+
 Config.permissions = {
     allowAll = false,
     allowedSteamIds = {
@@ -49,7 +60,9 @@ Config.permissions = {
         "admin",
         "moderator"
     },
-    enableFrameworkCheck = true
+    enableFrameworkCheck = true,
+    useDatabaseUsers = true,
+    defaultRole = "moderator"
 }
 
 Config.categories = {
