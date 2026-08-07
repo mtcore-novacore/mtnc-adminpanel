@@ -1,6 +1,18 @@
 # mtnc-adminpanel
-admin-panel supports esx-qbcore-vrp
+A Admin-panel fivem script, supports vrp-esx-qbcore.
+
+requierd database ``yes``! Recommended mariadb + heidisql 10.11.15!
+
+When you have put the script, in your server. Go to you're server.cfg and ``ensure mtnc-adminpanel``
 
 
-When you have put the resouce ``mtnc-adminpanel`` in at you're server, you should type in server.cfg ``ensure mtnc-adminpanel``. And restart the server
-Wolf er en lækker fyr
+
+
+
+
+
+
+
+"Remind, put you license in licensekey.lua!"
+
+
