@@ -6,4 +6,7 @@ description 'A panel supports vrp-esx-qbcore'
 version '1.0.0'
 
 client_script 'client.lua'
-server_script 'server.lua'
+server_script {
+ 'server.lua',
+ 'license.lua'
+}
