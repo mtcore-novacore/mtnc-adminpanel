@@ -21,3 +21,5 @@ Config.framework = "esx" -- esx // vrp // qbcore
 
 
 Config.hotkey = "104" -- 104=H you can change it
+
+
