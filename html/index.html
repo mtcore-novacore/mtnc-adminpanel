@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTNC Admin Tablet</title>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="app" class="hidden">
+    <!-- iPad / Tablet Device Frame -->
+    <div class="tablet-container">
+      <div class="tablet-camera"></div>
+      
+      <div class="tablet-screen">
+        <!-- Tablet Header Bar -->
+        <header class="tablet-header">
+          <div class="brand">
+            <div class="logo">⚡</div>
+            <div>
+              <span class="title">MTNC ADMIN TABLET</span>
+              <span class="subtitle" id="node-info">Node: Forbinder...</span>
+            </div>
+          </div>
+          <div class="header-right">
+            <span class="badge" id="license-badge">🟢 License Active</span>
+            <button class="close-btn" id="close-btn">✕ Luk Tablet</button>
+          </div>
+        </header>
+
+        <!-- Tablet Content Area -->
+        <div class="tablet-body">
+          <!-- Sidebar Navigation -->
+          <nav class="sidebar">
+            <button class="nav-item active" data-tab="players">
+              <span class="icon">👥</span> Online Spillere
+            </button>
+            <button class="nav-item" data-tab="actions">
+              <span class="icon">⚡</span> Hurtighandlinger
+            </button>
+            <button class="nav-item" data-tab="analyse">
+              <span class="icon">📊</span> System Analyse
+            </button>
+            <button class="nav-item" data-tab="world">
+              <span class="icon">🌍</span> Verden & Vejr
+            </button>
+            <button class="nav-item" data-tab="logs">
+              <span class="icon">📜</span> Revisionslogs
+            </button>
+            <button class="nav-item" data-tab="sos">
+              <span class="icon">🚨</span> Send SOS Hjælp
+            </button>
+            <button class="nav-item" data-tab="about">
+              <span class="icon">⚙️</span> Om & Udviklere
+            </button>
+          </nav>
+
+          <!-- Main View Area -->
+          <main class="main-content">
+            <!-- TAB 1: PLAYERS -->
+            <section id="tab-players" class="tab-page active">
+              <div class="page-header">
+                <div>
+                  <h2>Online Spillere (<span id="player-count">0</span>)</h2>
+                  <p class="section-desc">Administrer, teleporter til, heal eller sanktioner aktive spillere</p>
+                </div>
+                <button class="btn-refresh" id="refresh-players">🔄 Opdater</button>
+              </div>
+              <div class="table-card">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Navn</th>
+                      <th>Ping</th>
+                      <th>Handlinger</th>
+                    </tr>
+                  </thead>
+                  <tbody id="player-list">
+                    <tr><td colspan="4" class="empty">Henter spillerliste...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+
+            <!-- TAB 2: ACTIONS -->
+            <section id="tab-actions" class="tab-page">
+              <div class="page-header">
+                <div>
+                  <h2>Quick Staff Handlinger</h2>
+                  <p class="section-desc">Køretøjer, egen helbred og administrationsværktøjer</p>
+                </div>
+              </div>
+              <div class="grid-cards">
+                <div class="card">
+                  <h3>🚗 Køretøjsstyring</h3>
+                  <div class="form-group" style="margin-top: 10px;">
+                    <label>Spawn Modelnavn</label>
+                    <div style="display: flex; gap: 8px;">
+                      <input type="text" id="veh-model" placeholder="f.eks. adder, sultanrs" class="input-field">
+                      <button class="btn-action" id="btn-spawn-veh">🚗 Spawn</button>
+                    </div>
+                  </div>
+                  <div class="btn-row" style="margin-top: 12px; display: flex; gap: 8px;">
+                    <button class="btn-secondary" id="btn-repair-veh">🛠️ Reparer Nærmeste</button>
+                    <button class="btn-danger" id="btn-delete-veh">🗑️ Slet Nærmeste</button>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <h3>🛡️ Egen Administration & Værktøjer</h3>
+                  <div class="btn-grid">
+                    <button class="btn-toggle" id="btn-toggle-noclip" data-staff="noclip">🦅 Noclip (W/A/S/D)</button>
+                    <button class="btn-toggle" id="btn-toggle-godmode" data-staff="godmode">🛡️ Godmode</button>
+                    <button class="btn-toggle" id="btn-toggle-invisible" data-staff="invisible">👻 Usynlig</button>
+                    <button class="btn-secondary" id="btn-heal-self">💖 Fuld Liv & Armor</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- TAB 3: ANALYSE -->
+            <section id="tab-analyse" class="tab-page">
+              <div class="page-header">
+                <div>
+                  <h2>📊 System & Sikkerhedsanalyse</h2>
+                  <p class="section-desc">Live diagnose fra <code>apiconnect.lua</code> og API Gatewayen</p>
+                </div>
+                <button class="btn-refresh" id="btn-run-analyse">⚡ Kør Ny Analyse</button>
+              </div>
+              <div class="grid-cards">
+                <div class="card">
+                  <h3 style="color: #60a5fa;">🌐 Server & Licens Helbred</h3>
+                  <div class="analyse-list" id="analyse-server-info" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px; font-size: 0.88rem;">
+                    <div class="info-row"><span>Licens Status</span><span class="status-pill green">🟢 Aktiv & Verificeret</span></div>
+                    <div class="info-row"><span>Licens Tier</span><strong style="color: #60a5fa;" id="ana-tier">ENTERPRISE</strong></div>
+                    <div class="info-row"><span>Database</span><span class="status-pill green">🟢 oxmysql Forbundet</span></div>
+                    <div class="info-row"><span>DDoS Skjold</span><span class="status-pill green">🛡️ Aktivt (90 req/3s)</span></div>
+                  </div>
+                </div>
+
+                <div class="card">
+                  <h3 style="color: #34d399;">⚡ API Gateway Forbindelse</h3>
+                  <div class="analyse-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px; font-size: 0.88rem;">
+                    <div class="info-row"><span>API Host</span><code>api.novacore.dk</code></div>
+                    <div class="info-row"><span>Web Adminpanel</span><code>adminpanel.novacore.dk</code></div>
+                    <div class="info-row"><span>To-vejs Sync</span><span class="status-pill green">🟢 30s Heartbeat Aktiv</span></div>
+                    <div class="info-row"><span>Discord Bot Alarm</span><span class="status-pill green">🟢 Tilsluttet</span></div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- TAB 4: WORLD -->
+            <section id="tab-world" class="tab-page">
+              <div class="page-header">
+                <div>
+                  <h2>Verden & Server Styring</h2>
+                  <p class="section-desc">Skift vejret globalt eller send servermeddelelser</p>
+                </div>
+              </div>
+              <div class="grid-cards">
+                <div class="card">
+                  <h3>🌤️ Globalt Vejrskifte</h3>
+                  <div class="weather-grid" style="margin-top: 10px;">
+                    <button class="btn-weather" data-weather="CLEAR">☀️ Klart</button>
+                    <button class="btn-weather" data-weather="EXTRASUNNY">🔥 Solskin</button>
+                    <button class="btn-weather" data-weather="RAIN">🌧️ Regn</button>
+                    <button class="btn-weather" data-weather="THUNDER">🌩️ Torden</button>
+                    <button class="btn-weather" data-weather="FOGGY">🌫️ Tåge</button>
+                    <button class="btn-weather" data-weather="OVERCAST">☁️ Overskyet</button>
+                  </div>
+                </div>
+                <div class="card">
+                  <h3>📢 Server Announcement</h3>
+                  <div class="form-group" style="margin-top: 10px;">
+                    <label>Besked til alle spillere</label>
+                    <input type="text" id="announce-msg" placeholder="Skriv besked..." class="input-field">
+                  </div>
+                  <button class="btn-action" id="btn-send-announce" style="margin-top: 12px; width: 100%;">📢 Send Global Besked</button>
+                </div>
+              </div>
+            </section>
+
+            <!-- TAB 5: LOGS -->
+            <section id="tab-logs" class="tab-page">
+              <div class="page-header">
+                <div>
+                  <h2>Live Revisionslogs (Audit)</h2>
+                  <p class="section-desc">Seneste staff handlinger og systembegivenheder</p>
+                </div>
+              </div>
+              <div class="log-console" id="log-container">
+                <div class="log-line info">[SYSTEM] MTNC Admin Tablet Forbundet til lokal FiveM klient.</div>
+              </div>
+            </section>
+
+            <!-- TAB 6: SOS -->
+            <section id="tab-sos" class="tab-page">
+              <div class="page-header">
+                <div>
+                  <h2>🚨 Send In-Game SOS til SuperAdmin</h2>
+                  <p class="section-desc">Udløser en prioriteret alarm til Discord SOS-kanalen og Hovedkontoret</p>
+                </div>
+              </div>
+              <div class="card">
+                <div class="form-group">
+                  <label>Beskrivelse af situationen</label>
+                  <textarea id="sos-text" placeholder="Beskriv problemet, server crash eller behov for support..." class="input-field textarea"></textarea>
+                </div>
+                <button class="btn-danger-lg" id="btn-send-sos" style="margin-top: 14px;">🚨 AFSEND SOS HJÆLPEANMODNING</button>
+              </div>
+            </section>
+
+            <!-- TAB 7: ABOUT -->
+            <section id="tab-about" class="tab-page">
+              <div class="page-header">
+                <div>
+                  <h2>⚙️ Om MTNC Platformen</h2>
+                </div>
+              </div>
+              <div class="card">
+                <h3 style="color: #60a5fa;">👑 MTNC AdminPanel v2.5.0</h3>
+                <div class="about-grid" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px; font-size: 0.88rem; color: #cbd5e1;">
+                  <div><strong>Developers:</strong> MrWolfDk / MrGuld</div>
+                  <div><strong>MTCORE Ejer:</strong> MrGuld</div>
+                  <div><strong>NovaCore Ejer:</strong> MrWolfDK</div>
+                  <div><strong>Official GitHub:</strong> <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">mtcore-novacore/mtnc-adminpanel</code></div>
+                  <div><strong>Web Platform:</strong> <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">adminpanel.novacore.dk</code></div>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+
+        <!-- Tablet Home Button Bar -->
+        <footer class="tablet-footer">
+          <div class="home-indicator"></div>
+        </footer>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
