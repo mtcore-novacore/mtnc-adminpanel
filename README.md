@@ -119,9 +119,6 @@ Platformens indbyggede Discord bot understøtter både Slash Commands (`/`) og k
 | `/help` | Alle | Viser komplet kommandoguide og platform links. |
 | `/min-server` | Alle | Viser status, spillertal, IP og framework for dine noder. |
 | `/min-license` | Alle | Sender dine aktive licenser og udløbsdatoer i en privat DM. |
-| `/license-opret` | **Admin** | Opretter en ny licensnøgle med valg af tier, kunde og dage. |
-| `/server-admin` | **Admin** | Viser live status for samtlige FiveM server noder. |
-| `/ddos-status` | Alle | Viser aktuel status for DDoS Skjoldet og Cloudflare Edge. |
 | `/fivem-commands` | Alle | Viser in-game tablet genveje og noclip taster. |
 
 ---
