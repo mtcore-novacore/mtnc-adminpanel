@@ -1,0 +1,613 @@
+/* ============================================================
+   MTNC TABLET OS v3.0.1 — REAL HARDWARE & OS DESIGN
+   OFFICIAL MTNC TABLET HARDWARE & BRANDING
+   ============================================================ */
+
+:root {
+  --font-system: 'SF Pro Display', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Premium Hardware & OS Color Palette */
+  --chassis-bg: #131720;
+  --chassis-border: #242a38;
+  --screen-bg: #090c13;
+  
+  --surface-1: rgba(22, 28, 40, 0.75);
+  --surface-2: rgba(30, 38, 54, 0.6);
+  --surface-3: rgba(40, 50, 72, 0.5);
+  --surface-input: rgba(14, 18, 26, 0.85);
+
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-active: rgba(255, 255, 255, 0.16);
+
+  /* Authentic iOS/Tablet System Colors */
+  --sys-blue: #007aff;
+  --sys-green: #34c759;
+  --sys-orange: #ff9500;
+  --sys-red: #ff3b30;
+
+  /* Typography Colors */
+  --text-primary: #ffffff;
+  --text-secondary: #9aa4b2;
+  --text-muted: #626d7f;
+
+  /* Border Radii */
+  --radius-chassis: 38px;
+  --radius-screen: 26px;
+  --radius-card: 16px;
+  --radius-sm: 10px;
+
+  /* Shadows */
+  --shadow-chassis: 0 35px 80px rgba(0, 0, 0, 0.85), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.25);
+  --shadow-app-icon: 0 6px 14px rgba(0, 0, 0, 0.35);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  user-select: none;
+  font-family: var(--font-system);
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  background: transparent;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Tablet Container & Chassis */
+.tablet-container {
+  width: 1120px;
+  height: 740px;
+  max-width: 95vw;
+  max-height: 94vh;
+  display: flex;
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.22s ease;
+  perspective: 1000px;
+}
+
+.tablet-container.hidden {
+  opacity: 0;
+  transform: translateY(35px) scale(0.96);
+  pointer-events: none;
+}
+
+.tablet-chassis {
+  width: 100%;
+  height: 100%;
+  background: var(--chassis-bg);
+  border: 4px solid var(--chassis-border);
+  border-radius: var(--radius-chassis);
+  padding: 14px;
+  box-shadow: var(--shadow-chassis);
+  position: relative;
+}
+
+/* MTNC Laser Engraved Brand Mark on Hardware Bezel */
+.bezel-brand-mark {
+  position: absolute;
+  top: 4px;
+  left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.4;
+  letter-spacing: 0.18em;
+  font-size: 0.62rem;
+  font-weight: 900;
+  color: #fff;
+  pointer-events: none;
+}
+
+/* Hardware Buttons */
+.hw-btn {
+  position: absolute;
+  background: #1a1e27;
+  border: 1px solid #2d3342;
+  border-radius: 4px;
+}
+
+.hw-power {
+  top: -6px;
+  right: 80px;
+  width: 50px;
+  height: 4px;
+}
+
+.hw-vol-up {
+  left: -6px;
+  top: 100px;
+  width: 4px;
+  height: 40px;
+}
+
+.hw-vol-down {
+  left: -6px;
+  top: 150px;
+  width: 4px;
+  height: 40px;
+}
+
+/* Tablet Screen */
+.tablet-screen {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle at 15% 15%, rgba(0, 122, 255, 0.05) 0%, transparent 45%),
+              radial-gradient(circle at 85% 85%, rgba(52, 199, 89, 0.03) 0%, transparent 45%),
+              var(--screen-bg);
+  border-radius: var(--radius-screen);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Status Bar */
+.os-status-bar {
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: rgba(9, 12, 19, 0.65);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-subtle);
+  z-index: 200;
+}
+
+.status-left, .status-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.os-time {
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.os-date-small {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.camera-lens {
+  width: 10px;
+  height: 10px;
+  background: #000;
+  border-radius: 50%;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0 3px rgba(0, 122, 255, 0.4);
+}
+
+.status-badge-chip {
+  font-size: 0.68rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+  color: #fff;
+  letter-spacing: 0.05em;
+}
+
+.signal-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+}
+
+.signal-bars .bar {
+  width: 3px;
+  background: var(--text-primary);
+  border-radius: 1px;
+}
+
+.signal-bars .bar-1 { height: 3px; }
+.signal-bars .bar-2 { height: 6px; }
+.signal-bars .bar-3 { height: 9px; }
+.signal-bars .bar-4 { height: 11px; }
+
+.status-btn {
+  background: transparent;
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: var(--sys-red);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+.notif-badge.hidden {
+  display: none;
+}
+
+.battery-meter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.74rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.battery-shell {
+  width: 22px;
+  height: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  padding: 1px;
+  position: relative;
+}
+
+.battery-shell::after {
+  content: '';
+  position: absolute;
+  right: -3.5px;
+  top: 3px;
+  width: 2px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 0 1px 1px 0;
+}
+
+.battery-level {
+  width: 95%;
+  height: 100%;
+  background: var(--sys-green);
+  border-radius: 1px;
+}
+
+/* Viewport & View Management */
+.os-viewport {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.os-view {
+  width: 100%;
+  height: 100%;
+  padding: 24px 28px;
+  overflow-y: auto;
+  position: absolute;
+  top: 0;
+  left: 0;
+  opacity: 1;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.os-view.hidden {
+  opacity: 0;
+  transform: scale(0.985);
+  pointer-events: none;
+}
+
+/* Home Desktop Widgets */
+.home-widgets-container {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.home-widget {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  padding: 22px 24px;
+  backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-card);
+}
+
+.widget-brand-sub {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.time-widget .widget-time {
+  font-size: 3.2rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.time-widget .widget-date {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+.time-widget .widget-location {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+.status-widget-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 12px;
+}
+
+.widget-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.system-indicator.online {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sys-green);
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 0;
+  font-size: 0.84rem;
+}
+
+.status-row .label {
+  color: var(--text-muted);
+}
+
+.status-row .val {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.status-row .val.highlight {
+  color: var(--sys-blue);
+}
+
+.duty-badge {
+  color: var(--sys-green);
+  font-weight: 700;
+}
+
+/* Desktop App Grid */
+.desktop-app-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 22px 16px;
+}
+
+.app-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  padding: 10px 6px;
+  border-radius: 18px;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease;
+}
+
+.app-icon:hover {
+  transform: translateY(-4px) scale(1.03);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.app-icon:active {
+  transform: scale(0.95);
+}
+
+.icon-squircle {
+  width: 62px;
+  height: 62px;
+  background: var(--surface-2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.85rem;
+  box-shadow: var(--shadow-app-icon);
+  position: relative;
+  transition: border-color 0.15s ease;
+}
+
+.app-icon:hover .icon-squircle {
+  border-color: var(--border-active);
+}
+
+.icon-title {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  text-align: center;
+  letter-spacing: -0.01em;
+}
+
+/* Bottom Dock */
+.os-dock-wrapper {
+  height: 78px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 8px;
+  background: rgba(9, 12, 19, 0.7);
+  backdrop-filter: blur(24px);
+  border-top: 1px solid var(--border-subtle);
+  z-index: 200;
+}
+
+.os-dock {
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 14px;
+  border-radius: 24px;
+}
+
+.dock-app-icon {
+  background: transparent;
+  border: none;
+  font-size: 1.45rem;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease;
+}
+
+.dock-app-icon:hover {
+  transform: translateY(-4px) scale(1.15);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dock-app-icon:active {
+  transform: scale(0.92);
+}
+
+.home-indicator {
+  width: 140px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s ease, width 0.2s ease;
+}
+
+.home-indicator:hover {
+  background: rgba(255, 255, 255, 0.8);
+  width: 170px;
+}
+
+/* Notification Drawer */
+.notif-drawer {
+  position: absolute;
+  top: 38px;
+  right: 20px;
+  width: 360px;
+  max-height: 420px;
+  background: rgba(18, 22, 32, 0.95);
+  border: 1px solid var(--border-active);
+  border-radius: var(--radius-card);
+  padding: 18px;
+  backdrop-filter: blur(28px);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.notif-drawer.hidden {
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 12px;
+}
+
+.drawer-title span {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: #fff;
+  display: block;
+}
+
+.drawer-sub {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.drawer-clear-btn {
+  background: transparent;
+  border: none;
+  color: var(--sys-blue);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.notif-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+}
+
+/* Toast Deck */
+.toast-deck {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 9999;
+}
+
+.toast-bubble {
+  background: rgba(18, 24, 36, 0.95);
+  border: 1px solid var(--border-active);
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.84rem;
+  font-weight: 600;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  animation: toastIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes toastIn {
+  from { transform: translateX(40px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}

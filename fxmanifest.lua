@@ -1,115 +1,63 @@
---[[
-  ███╗   ███╗████████╗███╗   ██╗ ██████╗
-  ████╗ ████║╚══██╔══╝████╗  ██║██╔════╝
-  ██╔████╔██║   ██║   ██╔██╗ ██║██║
-  ██║╚██╔╝██║   ██║   ██║╚██╗██║██║
-  ██║ ╚═╝ ██║   ██║   ██║ ╚████║╚██████╗
-  ╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
-
-  MTNC AdminPanel v3.0.0 — NovaCore & MTCore
---]]
+-- ============================================================
+-- MTNC ADMIN TABLET v3.0.1
+-- PRODUCTION MASTER RELEASE
+-- ============================================================
+-- Developed by: NovaCore x MTCore
+-- Lead Developers: MrWolfDk & MrGuld
+-- Copyright (c) 2026 NovaCore x MTCore. All Rights Reserved.
+-- ============================================================
 
 fx_version 'cerulean'
 game 'gta5'
 lua54 'yes'
 
-name 'mtnc-adminpanel'
-author 'NovaCore & MTCore (MrWolfDk & MrGuld)'
-description 'MTNC AdminPanel & Tablet V3 — Enterprise Multi-Framework System'
-version '3.0.0'
+name 'MTNC Admin Tablet'
+author 'NovaCore x MTCore (MrWolfDk & MrGuld)'
+version '3.0.1'
+description 'MTNC Admin Tablet v3.0.1 - Professional In-Game Tablet OS (c) 2026 NovaCore x MTCore'
 
-ui_page 'html/index.html'
-
-files {
-    'html/index.html',
-    'html/style.css',
-    'html/app.js'
-}
+ui_page 'nui/index.html'
 
 shared_scripts {
-    'config.lua',
-    'apiconnect.lua'
-}
-
-client_scripts {
-    'client/core/utils.lua',
-    'client/core/nui.lua',
-    'client/main.lua'
+    'config/config.lua',
+    'config/permissions.lua',
+    'config/integrations.lua'
 }
 
 server_scripts {
     'licensekey.lua',
-    'server/database/schema.lua',
-    'server/database/migrations.lua',
-    'server/database/db.lua',
-    'server/database/connection.lua',
-    'server/database/installer.lua',
-    'server/core/utils.lua',
-    'server/core/logger.lua',
-    'server/core/security.lua',
-    'server/core/permissions.lua',
-    'server/core/events.lua',
-    'server/core/main.lua',
-    'server/framework/framework.lua',
-    'server/framework/qbcore.lua',
-    'server/framework/qbox.lua',
-    'server/framework/esx.lua',
-    'server/framework/vrp.lua',
-    'server/framework/standalone.lua',
-    'server/framework/custom.lua',
-    'server/framework/bridge.lua',
-    'server/api/authentication.lua',
-    'server/api/connection.lua',
-    'server/api/heartbeat.lua',
-    'server/license/integration.lua',
-    'server/housing/housing.lua',
-    'server/phone/phone.lua',
-    'server/economy/manager.lua',
-    'server/vehicles/manager.lua',
-    'server/players/identifiers.lua',
-    'server/players/manager.lua',
-    'server/punishments/manager.lua',
-    'server/reports/manager.lua',
-    'server/resources/manager.lua',
-    'server/staff/manager.lua',
-    'server/logs/audit.lua',
-    'server/updates/github.lua',
-    'server/updates/updater.lua',
-    'server/players.lua',
-    'server/economy.lua',
-    'server/vehicles.lua',
-    'server/world.lua',
+    'integrations/framework/qbcore.lua',
+    'integrations/framework/qbox.lua',
+    'integrations/framework/esx.lua',
+    'integrations/framework/vrp.lua',
+    'integrations/phone/lb-phone.lua',
+    'integrations/housing/housing.lua',
+    'integrations/vehicles/vehicles.lua',
+    'server/audit.lua',
+    'server/security.lua',
+    'server/permissions.lua',
+    'server/license.lua',
+    'server/jobs.lua',
+    'server/photos.lua',
+    'server/phone.lua',
     'server/reports.lua',
-    'server/logs.lua',
+    'server/updates.lua',
     'server/main.lua'
 }
 
--- SIKKERHEDSFILER DER ER KRYPTERET OG BESKYTTET:
--- server/api/*, server/license/*, server/main.lua, client/main.lua, client/core/*, server/core/* (UNDTAGEN server/core/events.lua)
-escrow_ignore {
-    'config.lua',
-    'licensekey.lua',
-    'apiconnect.lua',
-    'README.md',
-    'html/*',
-    'server/core/events.lua',
-    'server/database/*',
-    'server/economy/*',
-    'server/framework/*',
-    'server/housing/*',
-    'server/logs/*',
-    'server/phone/*',
-    'server/players/*',
-    'server/punishments/*',
-    'server/reports/*',
-    'server/resources/*',
-    'server/staff/*',
-    'server/updates/*',
-    'server/vehicles/*',
-    'server/players.lua',
-    'server/economy.lua',
-    'server/vehicles.lua',
-    'server/world.lua',
-    'server/reports.lua',
-    'server/logs.lua'
+client_scripts {
+    'client/camera.lua',
+    'client/notifications.lua',
+    'client/tablet.lua',
+    'client/main.lua'
+}
+
+files {
+    'nui/index.html',
+    'nui/css/style.css',
+    'nui/css/apps.css',
+    'nui/js/locales.js',
+    'nui/js/api.js',
+    'nui/js/apps.js',
+    'nui/js/app.js'
 }

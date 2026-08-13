@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="da">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MTNC Tablet OS v3.0.1</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/apps.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div id="tablet-container" class="tablet-container hidden">
+    <!-- Physical Tablet Chassis with MTNC Brand Markings -->
+    <div class="tablet-chassis">
+      <!-- Hardware Buttons (Cosmetic Realism) -->
+      <div class="hw-btn hw-power"></div>
+      <div class="hw-btn hw-vol-up"></div>
+      <div class="hw-btn hw-vol-down"></div>
+
+      <!-- Top Bezel Laser Engraved MTNC Badge -->
+      <div class="bezel-brand-mark">
+        <span class="brand-text">MTNC</span>
+      </div>
+
+      <!-- Tablet Screen -->
+      <div class="tablet-screen">
+        
+        <!-- Status Bar -->
+        <header class="os-status-bar">
+          <div class="status-left">
+            <span id="os-clock" class="os-time">12:00</span>
+            <span class="os-date-small" id="os-date-small">Fre 14. aug</span>
+          </div>
+          <div class="status-center">
+            <div class="camera-lens"></div>
+          </div>
+          <div class="status-right">
+            <span class="status-badge-chip">MTNC 5G</span>
+            <div class="signal-bars">
+              <span class="bar bar-1"></span>
+              <span class="bar bar-2"></span>
+              <span class="bar bar-3"></span>
+              <span class="bar bar-4"></span>
+            </div>
+            <button id="notif-toggle-btn" class="status-btn" title="Notifikationer">
+              🔔<span id="notif-badge" class="notif-badge hidden">0</span>
+            </button>
+            <div class="battery-meter">
+              <span class="battery-pct">98%</span>
+              <div class="battery-shell"><div class="battery-level"></div></div>
+            </div>
+          </div>
+        </header>
+
+        <!-- Slide-Down Notification Drawer -->
+        <div id="notif-drawer" class="notif-drawer hidden">
+          <div class="drawer-header">
+            <div class="drawer-title">
+              <span>🔔 Notifikationscenter</span>
+              <span id="drawer-count" class="drawer-sub">Ingen nye notifikationer</span>
+            </div>
+            <button id="clear-all-notifs" class="drawer-clear-btn">Ryd alle</button>
+          </div>
+          <div id="notif-feed" class="notif-feed"></div>
+        </div>
+
+        <!-- OS Workspace (View Container) -->
+        <main id="os-viewport" class="os-viewport">
+          <div id="view-home" class="os-view active">
+            <div class="home-widgets-container">
+              <!-- Clock & Weather Widget -->
+              <div class="home-widget time-widget">
+                <div class="widget-brand-sub">MTNC OS v3.0.1</div>
+                <div class="widget-time" id="home-time">12:00</div>
+                <div class="widget-date" id="home-date">Fredag, 14. August 2026</div>
+                <div class="widget-location">📍 Los Santos · 22°C Klart</div>
+              </div>
+              
+              <!-- System Status & Job Widget -->
+              <div class="home-widget quick-status-widget">
+                <div class="status-widget-header">
+                  <span class="widget-label" id="lbl-system-status">System Status</span>
+                  <span class="system-indicator online" id="lbl-gateway-status">🟢 MTNC Gateway</span>
+                </div>
+                <div class="status-widget-body">
+                  <div class="status-row">
+                    <span class="label" id="lbl-char">Karakter</span>
+                    <span class="val" id="widget-char-name">Thomas</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="label" id="lbl-active-job">Aktivt Job</span>
+                    <span class="val highlight" id="widget-char-job">Politi · Sergeant</span>
+                  </div>
+                  <div class="status-row">
+                    <span class="label" id="lbl-duty-status">Vagtstatus</span>
+                    <span class="val duty-badge" id="widget-duty-status">🟢 På vagt</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div id="desktop-app-grid" class="desktop-app-grid"></div>
+          </div>
+
+          <div id="view-profile" class="os-view hidden"></div>
+          <div id="view-jobs" class="os-view hidden"></div>
+          <div id="view-camera" class="os-view hidden"></div>
+          <div id="view-photos" class="os-view hidden"></div>
+          <div id="view-phone" class="os-view hidden"></div>
+          <div id="view-vehicles" class="os-view hidden"></div>
+          <div id="view-housing" class="os-view hidden"></div>
+          <div id="view-reports" class="os-view hidden"></div>
+          <div id="view-settings" class="os-view hidden"></div>
+          <div id="view-updates" class="os-view hidden"></div>
+          <div id="view-about" class="os-view hidden"></div>
+          <div id="view-admin" class="os-view hidden"></div>
+        </main>
+
+        <!-- Bottom Application Dock & Home Indicator -->
+        <footer class="os-dock-wrapper">
+          <nav class="os-dock">
+            <button class="dock-app-icon" data-open="home" title="Skrivebord"><span class="icon-sym">🏠</span></button>
+            <button class="dock-app-icon" data-open="profile" title="Min Profil"><span class="icon-sym">👤</span></button>
+            <button class="dock-app-icon" data-open="jobs" title="Jobs"><span class="icon-sym">💼</span></button>
+            <button class="dock-app-icon" data-open="phone" title="Telefon"><span class="icon-sym">📱</span></button>
+            <button class="dock-app-icon" data-open="camera" title="Kamera"><span class="icon-sym">📷</span></button>
+            <button class="dock-app-icon" data-open="photos" title="Billeder"><span class="icon-sym">🖼️</span></button>
+            <button class="dock-app-icon" data-open="settings" title="Indstillinger"><span class="icon-sym">⚙️</span></button>
+          </nav>
+          <div id="home-indicator" class="home-indicator" title="Luk Tablet (ESC / Klik)"></div>
+        </footer>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-deck" class="toast-deck"></div>
+
+  <!-- Scripts -->
+  <script src="js/locales.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/apps.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
