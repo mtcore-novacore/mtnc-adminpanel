@@ -3,4 +3,4 @@
 --  Indtast din unikke licensnøgle fra NovaCore nedenfor.
 -- ──────────────────────────────────────────────────────
 
-LicenseKey = "INDTAST LICENSE HER"
+LicenseKey = "INDTAST DIN LICENSE HER"
