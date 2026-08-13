@@ -1,5 +1,5 @@
 // ============================================================
-// MTNC TABLET OS v3.0.1 — MAIN CONTROLLER & RUNTIME
+// MTNC TABLET OS v3.0.2 — MAIN CONTROLLER & RUNTIME
 // ============================================================
 const App = {
   state: {
@@ -85,6 +85,9 @@ const App = {
 
         this.renderAppGrid();
         this.renderCurrentView();
+      } else if (action === 'setVehicles') {
+        this.state.vehicles = data || [];
+        if (this.state.currentApp === 'vehicles') this.renderCurrentView();
       } else if (action === 'setJobs') {
         this.state.jobsData = data;
         if (this.state.currentApp === 'jobs') this.renderCurrentView();
@@ -145,6 +148,7 @@ const App = {
     }
     // Fetch live data
     if (appId === 'jobs') API.post('getJobs');
+    if (appId === 'vehicles') API.post('getVehicles');
     if (appId === 'photos') API.post('getPhotos');
     if (appId === 'reports') API.post('getReports');
     if (appId === 'admin') {

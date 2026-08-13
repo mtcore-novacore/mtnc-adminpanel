@@ -3,7 +3,7 @@ Config = Config or {}
 -- ============================================================
 -- MTNC TABLET OS CONFIGURATION
 -- ============================================================
-Config.Version = '3.0.1'
+Config.Version = '3.0.2'
 Config.Locale = 'da' -- 'da' or 'en'
 
 -- Keybinds & Tablet Controls

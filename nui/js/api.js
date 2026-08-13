@@ -1,5 +1,5 @@
 // ============================================================
-// MTNC TABLET OS v3.0.1 — NUI BRIDGE & API CALLS
+// MTNC TABLET OS v3.0.2 — NUI BRIDGE & API CALLS
 // ============================================================
 const API = {
   isFiveM: typeof window.invokeNative !== 'undefined' || typeof window.GetParentResourceName !== 'undefined',

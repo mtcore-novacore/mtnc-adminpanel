@@ -1,5 +1,5 @@
 -- ============================================================
--- MTNC ADMIN TABLET v3.0.1
+-- MTNC ADMIN TABLET v3.0.2
 -- PRODUCTION MASTER RELEASE
 -- ============================================================
 -- Developed by: NovaCore x MTCore
@@ -13,8 +13,8 @@ lua54 'yes'
 
 name 'MTNC Admin Tablet'
 author 'NovaCore x MTCore (MrWolfDk & MrGuld)'
-version '3.0.1'
-description 'MTNC Admin Tablet v3.0.1 - Professional In-Game Tablet OS (c) 2026 NovaCore x MTCore'
+version '3.0.2'
+description 'MTNC Admin Tablet v3.0.2 - Professional In-Game Tablet OS (c) 2026 NovaCore x MTCore'
 
 ui_page 'nui/index.html'
 

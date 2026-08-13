@@ -1,5 +1,5 @@
 -- ============================================================
--- MTNC ADMIN TABLET v3.0.1 — SERVER MAIN ENTRYPOINT
+-- MTNC ADMIN TABLET v3.0.2 - SERVER MAIN ENTRYPOINT
 -- ============================================================
 
 RegisterNetEvent('mtnc:server:openTablet', function()
@@ -30,6 +30,24 @@ RegisterNetEvent('mtnc:server:openTablet', function()
         },
         licenseStatus = License.Status
     })
+end)
+
+-- Live Database Vehicle Fetching for Tablet
+RegisterNetEvent('mtnc:server:getVehicles', function()
+    local src = source
+    if not Security.RateLimit(src) then return end
+
+    local vehicles = VehicleAdapter.GetOwnedVehicles(src)
+    TriggerClientEvent('mtnc:client:receiveVehicles', src, vehicles)
+end)
+
+-- Staff Search Vehicle Plate Owner in Database
+RegisterNetEvent('mtnc:server:searchVehicle', function(plate)
+    local src = source
+    if not Permissions.HasPermission(src, 'admin.access') then return end
+
+    local matches = VehicleAdapter.LookupPlate(plate)
+    TriggerClientEvent('mtnc:client:receiveVehicleSearch', src, matches)
 end)
 
 -- Admin Player Actions

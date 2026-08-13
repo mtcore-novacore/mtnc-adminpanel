@@ -1,5 +1,5 @@
 // ============================================================
-// MTNC TABLET OS v3.0.1 — MULTI-LANGUAGE LOCALIZATION (i18n)
+// MTNC TABLET OS v3.0.2 — MULTI-LANGUAGE LOCALIZATION (i18n)
 // SUPPORTED: 🇩🇰 DANSK, 🇬🇧 ENGLISH, 🇩🇪 DEUTSCH, 🇸🇪 SVENSKA, 🇳🇴 NORSK
 // ============================================================
 
@@ -137,10 +137,10 @@ const Locales = {
 
     about_title: 'ℹ️ Om MTNC Tablet OS',
     about_sub: 'Officiel In-Game Tablet Administration',
-    about_card_title: 'MTNC Admin Tablet v3.0.1',
+    about_card_title: 'MTNC Admin Tablet v3.0.2',
     about_build: 'Byggenummer',
     about_license: 'Licensstyring',
-    about_license_val: 'Server-side Sikret (Port 3009)',
+    about_license_val: 'Server-side Sikret (Cloud Sikret)',
 
     admin_title: '🛡️ Staff Kontrolpanel',
     admin_sub: 'Logget ind som',
@@ -294,10 +294,10 @@ const Locales = {
 
     about_title: 'ℹ️ About MTNC Tablet OS',
     about_sub: 'Official In-Game Tablet Administration',
-    about_card_title: 'MTNC Admin Tablet v3.0.1',
+    about_card_title: 'MTNC Admin Tablet v3.0.2',
     about_build: 'Build Number',
     about_license: 'License Management',
-    about_license_val: 'Server-Side Secured (Port 3009)',
+    about_license_val: 'Server-Side Secured (Cloud Sikret)',
 
     admin_title: '🛡️ Staff Control Panel',
     admin_sub: 'Logged in as',

@@ -5,7 +5,7 @@ Updates = Updates or {}
 
 function Updates.Check()
     local repo = "mtcore-novacore/mtnc-adminpanel"
-    local localVersion = Config.Version or "3.0.1"
+    local localVersion = Config.Version or "3.0.2"
 
     PerformHttpRequest("https://api.github.com/repos/" .. repo .. "/releases/latest", function(statusCode, responseText, headers)
         if statusCode == 200 then
@@ -27,7 +27,7 @@ function Updates.Check()
                 body = "Systemet er fuldt opdateret til version " .. localVersion
             }
         end
-    end, "GET", "", { ["User-Agent"] = "MTNC-AdminTablet-v3.0.1" })
+    end, "GET", "", { ["User-Agent"] = "MTNC-AdminTablet-v3.0.2" })
 end
 
 CreateThread(function()

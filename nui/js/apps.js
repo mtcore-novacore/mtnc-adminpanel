@@ -1,5 +1,5 @@
 // ============================================================
-// MTNC TABLET OS v3.0.1 — COMPLETE 14 APPLICATION RENDERERS (i18n READY)
+// MTNC TABLET OS v3.0.2 — COMPLETE 14 APPLICATION RENDERERS (i18n READY)
 // ============================================================
 
 function getAppsList() {
@@ -50,7 +50,7 @@ const Renderers = {
           <div class="os-card-title">📱 ${t('profile_phone')}</div>
           <div class="os-card-row"><span class="row-label">${t('profile_phone')}</span><span class="row-value">${p.phone || '+45 XXXXXXXX'}</span></div>
           <div class="os-card-row"><span class="row-label">${t('profile_system_role')}</span><span class="row-value">${s.role || 'Bruger'}</span></div>
-          <div class="os-card-row"><span class="row-label">${t('profile_gateway')}</span><span class="row-value" style="color:var(--sys-green);">${t('connected')} (Port 3009)</span></div>
+          <div class="os-card-row"><span class="row-label">${t('profile_gateway')}</span><span class="row-value" style="color:var(--sys-green);">${t('connected')} (Cloud Sikret)</span></div>
           <div class="os-card-row"><span class="row-label">${t('profile_license_status')}</span><span class="row-value">${t('profile_sec_status')}</span></div>
         </div>
       </div>
@@ -334,7 +334,7 @@ const Renderers = {
   },
 
   updates(state) {
-    const up = state.updates || { installed: '3.0.1', latest: '3.0.1', hasUpdate: false, body: 'Systemet er fuldt opdateret.' };
+    const up = state.updates || { installed: '3.0.2', latest: '3.0.2', hasUpdate: false, body: 'Systemet er fuldt opdateret.' };
     return `
       <div class="os-app-header">
         <div class="app-nav-group">
@@ -373,7 +373,7 @@ const Renderers = {
           Udviklet af <strong>NovaCore × MTCore</strong> · Udviklet af MrWolfDk &amp; MrGuld.<br>
           © 2026 Alle rettigheder forbeholdes.
         </p>
-        <div class="os-card-row"><span class="row-label">${t('about_build')}</span><span class="row-value">v3.0.1-PROD</span></div>
+        <div class="os-card-row"><span class="row-label">${t('about_build')}</span><span class="row-value">v3.0.2-PROD</span></div>
         <div class="os-card-row"><span class="row-label">${t('about_license')}</span><span class="row-value" style="color:var(--sys-green);">${t('about_license_val')}</span></div>
       </div>
     `;

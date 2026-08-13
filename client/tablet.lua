@@ -22,6 +22,11 @@ RegisterNUICallback('switchJob', function(data, cb)
     cb('ok')
 end)
 
+RegisterNUICallback('getVehicles', function(data, cb)
+    TriggerServerEvent('mtnc:server:getVehicles')
+    cb('ok')
+end)
+
 RegisterNUICallback('requestPhonePinReset', function(data, cb)
     TriggerServerEvent('mtnc:server:requestPinReset', data.reason)
     cb('ok')
@@ -70,6 +75,10 @@ end)
 -- Receive Events from Server
 RegisterNetEvent('mtnc:client:receiveJobs', function(data)
     SendNUIMessage({ action = 'setJobs', data = data })
+end)
+
+RegisterNetEvent('mtnc:client:receiveVehicles', function(data)
+    SendNUIMessage({ action = 'setVehicles', data = data })
 end)
 
 RegisterNetEvent('mtnc:client:receivePhotos', function(data)
