@@ -1,226 +1,277 @@
 // ──────────────────────────────────────────────────────
-//  MTNC Admin Tablet — NUI JavaScript App
-//  Modern Classic In-Game Tablet Controller
+//  MTNC Admin Tablet — NUI JavaScript App v3.0
+//  Dual Mode Controller: Player Profile & AdminPanel
 // ──────────────────────────────────────────────────────
+
+let onlinePlayersData = [];
+let currentUserData = null;
 
 document.addEventListener('DOMContentLoaded', () => {
   const app = document.getElementById('app');
   const closeBtn = document.getElementById('close-btn');
-  const refreshBtn = document.getElementById('refresh-players');
-  const playerList = document.getElementById('player-list');
-  const playerCount = document.getElementById('player-count');
-  const nodeInfo = document.getElementById('node-info');
-  const licenseBadge = document.getElementById('license-badge');
-  const logContainer = document.getElementById('log-container');
-  const btnRunAnalyse = document.getElementById('btn-run-analyse');
+  const tabletClock = document.getElementById('tablet-clock');
 
-  // NUI Event Listener from FiveM client
+  // Mode buttons
+  const modeProfileBtn = document.getElementById('mode-profile-btn');
+  const modeAdminBtn = document.getElementById('mode-admin-btn');
+  const viewProfile = document.getElementById('view-profile');
+  const viewAdmin = document.getElementById('view-admin');
+
+  // Update Clock
+  setInterval(() => {
+    const now = new Date();
+    if (tabletClock) {
+      tabletClock.innerText = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+  }, 1000);
+
+  // Close button
+  if (closeBtn) {
+    closeBtn.addEventListener('click', closeTablet);
+  }
+
+  // ESC Key to close
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      closeTablet();
+    }
+  });
+
+  // Mode switching
+  if (modeProfileBtn) {
+    modeProfileBtn.addEventListener('click', () => {
+      modeProfileBtn.classList.add('active');
+      modeAdminBtn.classList.remove('active');
+      viewProfile.classList.remove('hidden');
+      viewAdmin.classList.add('hidden');
+    });
+  }
+
+  if (modeAdminBtn) {
+    modeAdminBtn.addEventListener('click', () => {
+      modeAdminBtn.classList.add('active');
+      modeProfileBtn.classList.remove('active');
+      viewAdmin.classList.remove('hidden');
+      viewProfile.classList.add('hidden');
+    });
+  }
+
+  // Profile Subtabs
+  document.querySelectorAll('.sub-tab').forEach((tabBtn) => {
+    tabBtn.addEventListener('click', () => {
+      document.querySelectorAll('.sub-tab').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.subtab-content').forEach(c => c.classList.add('hidden'));
+
+      tabBtn.classList.add('active');
+      const targetId = tabBtn.getAttribute('data-subtab');
+      if (targetId) {
+        const el = document.getElementById(targetId);
+        if (el) el.classList.remove('hidden');
+      }
+    });
+  });
+
+  // Admin Sidebar Tabs
+  document.querySelectorAll('.sidebar .nav-item').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.sidebar .nav-item').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-pane').forEach(p => p.classList.add('hidden'));
+
+      btn.classList.add('active');
+      const targetTab = btn.getAttribute('data-tab');
+      const targetPane = document.getElementById(`tab-${targetTab}`);
+      if (targetPane) {
+        targetPane.classList.remove('hidden');
+      }
+    });
+  });
+
+  // Change PIN handler
+  const changePinBtn = document.getElementById('change-pin-btn');
+  if (changePinBtn) {
+    changePinBtn.addEventListener('click', () => {
+      const newPin = prompt('Indtast din nye 4-cifrede PIN-kode:');
+      if (newPin && newPin.trim().length >= 4) {
+        const pinCodeEl = document.getElementById('prof-pin-code');
+        const kpiPinEl = document.getElementById('kpi-pin');
+        if (pinCodeEl) pinCodeEl.innerText = newPin.trim();
+        if (kpiPinEl) kpiPinEl.innerText = newPin.trim();
+        fetch(`https://${GetParentResourceName()}/updatePin`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ pin: newPin.trim() })
+        }).catch(() => null);
+        alert('Din PIN-kode er blevet opdateret!');
+      }
+    });
+  }
+
+  // NUI Event Listener from FiveM Client
   window.addEventListener('message', (event) => {
     const item = event.data;
     if (item.type === 'setVisible') {
       if (item.visible) {
         app.classList.remove('hidden');
-        if (item.data) {
-          if (item.data.nodeId) nodeInfo.innerText = 'Node: ' + item.data.nodeId;
-          if (item.data.tier) {
-            licenseBadge.innerText = `🟢 Tier: ${item.data.tier}`;
-            const anaTier = document.getElementById('ana-tier');
-            if (anaTier) anaTier.innerText = item.data.tier;
-          }
+
+        if (item.isAdmin === false && modeAdminBtn) {
+          modeAdminBtn.style.display = 'none';
+        } else if (modeAdminBtn) {
+          modeAdminBtn.style.display = 'block';
         }
+
+        if (item.data) {
+          const nodeInfo = document.getElementById('node-info');
+          const kpiServerIp = document.getElementById('kpi-server-ip');
+          if (nodeInfo) nodeInfo.innerText = item.data.serverIp || '127.0.0.1:30120';
+          if (kpiServerIp) kpiServerIp.innerText = item.data.serverIp || '127.0.0.1:30120';
+        }
+
+        if (item.playerData) {
+          currentUserData = item.playerData;
+          renderProfileData(currentUserData);
+        }
+
         fetchPlayers();
       } else {
         app.classList.add('hidden');
       }
     } else if (item.type === 'updatePlayers') {
-      renderPlayers(item.players || []);
-    } else if (item.type === 'updateLogs') {
-      renderLogs(item.logs || []);
-    } else if (item.type === 'receiveAnalysis') {
-      renderAnalysis(item.data);
+      onlinePlayersData = item.players || [];
+      renderPlayers(onlinePlayersData);
     }
   });
 
-  // Tab Navigation
-  document.querySelectorAll('.nav-item').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-
-      btn.classList.add('active');
-      const tabId = 'tab-' + btn.getAttribute('data-tab');
-      const targetPage = document.getElementById(tabId);
-      if (targetPage) targetPage.classList.add('active');
+  // Search filter for players
+  const playerSearch = document.getElementById('player-search');
+  if (playerSearch) {
+    playerSearch.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase();
+      const filtered = onlinePlayersData.filter(p =>
+        p.name.toLowerCase().includes(q) ||
+        p.id.toString().includes(q) ||
+        (p.steam && p.steam.toLowerCase().includes(q))
+      );
+      renderPlayers(filtered);
     });
-  });
-
-  // Close Panel (ESC / Button)
-  closeBtn.addEventListener('click', () => {
-    fetch(`https://${GetParentResourceName()}/closePanel`, { method: 'POST' });
-  });
-
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') {
-      fetch(`https://${GetParentResourceName()}/closePanel`, { method: 'POST' });
-    }
-  });
-
-  // Refresh Players
-  if (refreshBtn) {
-    refreshBtn.addEventListener('click', fetchPlayers);
-  }
-
-  function fetchPlayers() {
-    fetch(`https://${GetParentResourceName()}/getPlayers`, { method: 'POST' });
-  }
-
-  function renderPlayers(players) {
-    playerCount.innerText = players.length;
-    if (!players || players.length === 0) {
-      playerList.innerHTML = '<tr><td colspan="4" class="empty">Ingen spillere fundet online på serveren.</td></tr>';
-      return;
-    }
-
-    playerList.innerHTML = players.map(p => `
-      <tr>
-        <td><strong>#${p.id}</strong></td>
-        <td>${escapeHtml(p.name)}</td>
-        <td><span style="color:#10b981;font-weight:600">${p.ping}ms</span></td>
-        <td>
-          <div style="display:flex;gap:6px;flex-wrap:wrap">
-            <button onclick="sendAction('teleport', ${p.id})" style="background:rgba(59,130,246,0.15);color:#60a5fa;border:1px solid rgba(59,130,246,0.3);padding:4px 8px;border-radius:6px;font-size:0.75rem;cursor:pointer">Teleport</button>
-            <button onclick="sendAction('bring', ${p.id})" style="background:rgba(139,92,246,0.15);color:#a78bfa;border:1px solid rgba(139,92,246,0.3);padding:4px 8px;border-radius:6px;font-size:0.75rem;cursor:pointer">Bring</button>
-            <button onclick="sendAction('heal', ${p.id})" style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.3);padding:4px 8px;border-radius:6px;font-size:0.75rem;cursor:pointer">Heal</button>
-            <button onclick="sendAction('kick', ${p.id})" style="background:rgba(245,158,11,0.15);color:#fbbf24;border:1px solid rgba(245,158,11,0.3);padding:4px 8px;border-radius:6px;font-size:0.75rem;cursor:pointer">Kick</button>
-            <button onclick="sendAction('ban', ${p.id})" style="background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);padding:4px 8px;border-radius:6px;font-size:0.75rem;cursor:pointer">Ban</button>
-          </div>
-        </td>
-      </tr>
-    `).join('');
-  }
-
-  function renderLogs(logs) {
-    if (!logs || logs.length === 0) return;
-    logContainer.innerHTML = logs.map(l => `
-      <div class="log-line">
-        <span style="color:#64748b">[${escapeHtml(l.timestamp || '')}]</span>
-        <strong style="color:#60a5fa">${escapeHtml(l.action || '')}</strong>:
-        <span>${escapeHtml(l.details || '')}</span>
-      </div>
-    `).join('');
-  }
-
-  function renderAnalysis(data) {
-    if (!data) return;
-    const infoContainer = document.getElementById('analyse-server-info');
-    if (infoContainer) {
-      infoContainer.innerHTML = `
-        <div class="info-row"><span>Licens Status</span><span class="status-pill green">${data.license?.valid ? '🟢 Aktiv & Verificeret' : '🔴 Ugyldig'}</span></div>
-        <div class="info-row"><span>Licens Tier</span><strong style="color: #60a5fa;">${escapeHtml(data.license?.tier || 'ENTERPRISE')}</strong></div>
-        <div class="info-row"><span>Database</span><span class="status-pill green">🟢 ${escapeHtml(data.database?.driver || 'oxmysql')} Forbundet</span></div>
-        <div class="info-row"><span>DDoS Skjold</span><span class="status-pill green">🛡️ Aktivt (${escapeHtml(data.securityShield?.rateLimit || '90 req/3s')})</span></div>
-        <div class="info-row"><span>Spillere Online</span><strong>${data.playersOnline || 0} / ${data.maxSlots || 64}</strong></div>
-        <div class="info-row"><span>Framework Bridge</span><code>${escapeHtml(data.framework || 'standalone')}</code></div>
-      `;
-    }
-  }
-
-  // Run Analysis Action
-  if (btnRunAnalyse) {
-    btnRunAnalyse.addEventListener('click', () => {
-      fetch(`https://${GetParentResourceName()}/runAnalysis`, { method: 'POST' });
-    });
-  }
-
-  window.sendAction = function(action, playerId) {
-    fetch(`https://${GetParentResourceName()}/playerAction`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, targetId: playerId })
-    });
-  };
-
-  // Spawn Vehicle
-  const spawnVehBtn = document.getElementById('btn-spawn-veh');
-  if (spawnVehBtn) {
-    spawnVehBtn.addEventListener('click', () => {
-      const model = document.getElementById('veh-model').value.trim();
-      if (!model) return;
-      fetch(`https://${GetParentResourceName()}/spawnVehicle`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model })
-      });
-      document.getElementById('veh-model').value = '';
-    });
-  }
-
-  // Delete & Repair Vehicle
-  document.getElementById('btn-repair-veh')?.addEventListener('click', () => {
-    fetch(`https://${GetParentResourceName()}/repairVehicle`, { method: 'POST' });
-  });
-  document.getElementById('btn-delete-veh')?.addEventListener('click', () => {
-    fetch(`https://${GetParentResourceName()}/deleteVehicle`, { method: 'POST' });
-  });
-
-  // Staff Self Tools
-  document.getElementById('btn-heal-self')?.addEventListener('click', () => {
-    fetch(`https://${GetParentResourceName()}/staffAction`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'heal' })
-    });
-  });
-
-  document.querySelectorAll('.btn-toggle').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const staffType = btn.getAttribute('data-staff');
-      btn.classList.toggle('active');
-      fetch(`https://${GetParentResourceName()}/staffAction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: staffType })
-      });
-    });
-  });
-
-  // Weather Buttons
-  document.querySelectorAll('.btn-weather').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const weather = btn.getAttribute('data-weather');
-      fetch(`https://${GetParentResourceName()}/worldAction`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type: 'weather', weather })
-      });
-    });
-  });
-
-  // Announcement
-  document.getElementById('btn-send-announce')?.addEventListener('click', () => {
-    const message = document.getElementById('announce-msg').value.trim();
-    if (!message) return;
-    fetch(`https://${GetParentResourceName()}/worldAction`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'announcement', message })
-    });
-    document.getElementById('announce-msg').value = '';
-  });
-
-  // Send SOS
-  document.getElementById('btn-send-sos')?.addEventListener('click', () => {
-    const text = document.getElementById('sos-text').value.trim();
-    if (!text) return;
-    fetch(`https://${GetParentResourceName()}/sendSos`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: text })
-    });
-    document.getElementById('sos-text').value = '';
-  });
-
-  function escapeHtml(str) {
-    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 });
+
+function closeTablet() {
+  document.getElementById('app').classList.add('hidden');
+  fetch(`https://${GetParentResourceName()}/closePanel`, { method: 'POST' });
+}
+
+function fetchPlayers() {
+  fetch(`https://${GetParentResourceName()}/getPlayers`, { method: 'POST' });
+}
+
+function renderProfileData(p) {
+  if (!p) return;
+  const profName = document.getElementById('prof-name');
+  const profCitizen = document.getElementById('prof-citizen');
+  const profCash = document.getElementById('prof-cash');
+  const profBank = document.getElementById('prof-bank');
+  const profJob = document.getElementById('prof-job');
+  const profPinCode = document.getElementById('prof-pin-code');
+
+  if (profName) profName.innerText = p.name || 'Spiller';
+  if (profCitizen) profCitizen.innerText = `CPR: ${p.citizenId || '120498-4421'}`;
+  if (profCash) profCash.innerText = `kr. ${(p.cash || 0).toLocaleString('da-DK')}`;
+  if (profBank) profBank.innerText = `kr. ${(p.bank || 0).toLocaleString('da-DK')}`;
+  if (profJob) profJob.innerText = `${p.job || 'Civil'} · ${p.jobGrade || 'Borger'}`;
+  if (profPinCode) profPinCode.innerText = p.pin || '1234';
+}
+
+function renderPlayers(players) {
+  const tbody = document.getElementById('player-table-body');
+  const kpiPlayers = document.getElementById('kpi-players');
+  if (!tbody) return;
+
+  tbody.innerHTML = '';
+  if (kpiPlayers) kpiPlayers.innerText = `${players.length} / 128`;
+
+  players.forEach((p) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>#${p.id}</td>
+      <td><strong>${p.name}</strong></td>
+      <td>${p.ping || 12} ms</td>
+      <td><code>${p.steam || 'N/A'}</code></td>
+      <td>
+        <button class="btn-primary" style="padding: 4px 8px; font-size: 0.75rem;" onclick="kickPlayer(${p.id})">Kick</button>
+        <button class="btn-danger" style="padding: 4px 8px; font-size: 0.75rem;" onclick="banPlayer(${p.id})">Ban</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function quickReviveSelf() {
+  fetch(`https://${GetParentResourceName()}/sendAction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'REVIVE_SELF' })
+  });
+}
+
+function quickNoclip() {
+  fetch(`https://${GetParentResourceName()}/sendAction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'NOCLIP' })
+  });
+}
+
+function quickClearArea() {
+  fetch(`https://${GetParentResourceName()}/sendAction`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action: 'CLEAR_AREA' })
+  });
+}
+
+function quickSpawnPanto() {
+  fetch(`https://${GetParentResourceName()}/spawnVehicle`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ model: 'panto' })
+  });
+}
+
+function kickPlayer(id) {
+  const reason = prompt('Angiv årsag til kick:');
+  if (reason) {
+    fetch(`https://${GetParentResourceName()}/sendAction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'KICK', targetId: id, reason })
+    });
+  }
+}
+
+function banPlayer(id) {
+  const reason = prompt('Angiv årsag til ban:');
+  if (reason) {
+    fetch(`https://${GetParentResourceName()}/sendAction`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'BAN', targetId: id, reason })
+    });
+  }
+}
+
+function setWeather(weather) {
+  fetch(`https://${GetParentResourceName()}/setWeather`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ weather })
+  });
+}
+
+function setTime(hour, minute) {
+  fetch(`https://${GetParentResourceName()}/setTime`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ hour, minute })
+  });
+}

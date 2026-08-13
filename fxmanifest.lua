@@ -1,155 +1,104 @@
---[[
-  ███╗   ███╗████████╗███╗   ██╗ ██████╗
-  ████╗ ████║╚══██╔══╝████╗  ██║██╔════╝
-  ██╔████╔██║   ██║   ██╔██╗ ██║██║
-  ██║╚██╔╝██║   ██║   ██║╚██╗██║██║
-  ██║ ╚═╝ ██║   ██║   ██║ ╚████║╚██████╗
-  ╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
-
-  MTNC AdminPanel v2.5.0 — fxmanifest.lua
-  Modular Architecture & Encryption-Ready
---]]
-
 fx_version 'cerulean'
-games { 'gta5' }
+game 'gta5'
 lua54 'yes'
 
-author 'NovaCore-MTCore'
-description 'MTNC AdminPanel — Modular Multi-Framework FiveM Administration System'
-version '2.5.0'
-
-dependency 'oxmysql'
-
--- ── FIVE M ESCROW / KRYPTERING IGNORE LISTE ──
--- Disse filer forbliver ÅBNE og krypteres IKKE af FiveM Escrow / Tebex / Obfuscators
-escrow_ignore {
-  'config.lua',
-  'licensekey.lua',
-  'apiconnect.lua',
-  'KRYPTERINGSGUIDE.md',
-  -- Åbne Framework Adaptere
-  'client/framework/qbcore.lua',
-  'client/framework/qbox.lua',
-  'client/framework/esx.lua',
-  'client/framework/vrp.lua',
-  'client/framework/standalone.lua',
-  'client/framework/custom.lua',
-  'client/framework/bridge.lua',
-  'server/framework/qbcore.lua',
-  'server/framework/qbox.lua',
-  'server/framework/esx.lua',
-  'server/framework/vrp.lua',
-  'server/framework/standalone.lua',
-  'server/framework/custom.lua',
-  'server/framework/bridge.lua',
-  -- NUI Brugerflade
-  'html/index.html',
-  'html/style.css',
-  'html/app.js'
-}
-
--- ── ÅBNE / OFFENTLIGE SCRIPTS ──
-shared_scripts {
-  'config.lua',
-  'apiconnect.lua'
-}
-
--- ── CLIENT-SIDE SCRIPTS ──
-client_scripts {
-  'config.lua',
-  'apiconnect.lua',
-  -- Åbne Framework Adaptere (Kan frit tilpasses)
-  'client/framework/qbcore.lua',
-  'client/framework/qbox.lua',
-  'client/framework/esx.lua',
-  'client/framework/vrp.lua',
-  'client/framework/standalone.lua',
-  'client/framework/custom.lua',
-  'client/framework/bridge.lua',
-  -- Core & Features (Krypteres)
-  'client/core/utils.lua',
-  'client/core/nui.lua',
-  'client/features/vehicles.lua',
-  'client/features/staff.lua',
-  'client/features/noclip.lua',
-  'client/features/world.lua',
-  'client/commands/admin.lua',
-  'client/core/events.lua',
-  'client/core/main.lua',
-}
-
--- ── SERVER-SIDE SCRIPTS ──
-server_scripts {
-  '@oxmysql/lib/MySQL.lua',
-  'licensekey.lua',
-  'config.lua',
-  'apiconnect.lua',
-  -- Åbne Framework Adaptere (Kan frit tilpasses)
-  'server/framework/qbcore.lua',
-  'server/framework/qbox.lua',
-  'server/framework/esx.lua',
-  'server/framework/vrp.lua',
-  'server/framework/standalone.lua',
-  'server/framework/custom.lua',
-  'server/framework/bridge.lua',
-  -- Core & Sikkerhed (Krypteres)
-  'server/core/logger.lua',
-  'server/core/utils.lua',
-  'server/core/security.lua',
-  'server/core/permissions.lua',
-  -- Database engine (Krypteres)
-  'server/database/schema.lua',
-  'server/database/connection.lua',
-  'server/database/migrations.lua',
-  'server/database/installer.lua',
-  -- License & API gateway (Krypteres)
-  'server/license/integration.lua',
-  'server/api/authentication.lua',
-  'server/api/connection.lua',
-  'server/api/heartbeat.lua',
-  -- GitHub update checker (Krypteres)
-  'server/updates/github.lua',
-  -- Feature managers (Krypteres)
-  'server/logs/audit.lua',
-  'server/players/identifiers.lua',
-  'server/players/manager.lua',
-  'server/punishments/manager.lua',
-  'server/reports/manager.lua',
-  'server/vehicles/manager.lua',
-  'server/economy/manager.lua',
-  'server/staff/manager.lua',
-  'server/resources/manager.lua',
-  -- Events router & main coordinator (Krypteres)
-  'server/core/events.lua',
-  'server/core/main.lua',
-}
-
--- ── EXPORTS TIL EKSTERNE SCRIPTS ──
-server_exports {
-  'Analyse',
-  'GetSystemAnalysis',
-  'HasPermission',
-  'GetPlayerRole',
-  'SendAuditLog',
-  'TriggerSos',
-  'KickPlayer',
-  'BanPlayer',
-  'HealPlayer',
-  'GiveMoney'
-}
-
-exports {
-  'OpenAdminMenu',
-  'CloseAdminMenu',
-  'ToggleNoclip',
-  'IsNoclipActive',
-  'AnalyseClient'
-}
+name 'mtnc-adminpanel'
+author 'NovaCore & MTCore (MrWolfDk & MrGuld)'
+description 'MTNC AdminPanel & Tablet V3 — Enterprise Multi-Framework System'
+version '3.0.0'
 
 ui_page 'html/index.html'
 
 files {
-  'html/index.html',
-  'html/style.css',
-  'html/app.js'
+    'html/index.html',
+    'html/style.css',
+    'html/app.js'
+}
+
+shared_scripts {
+    'config.lua',
+    'apiconnect.lua'
+}
+
+client_scripts {
+    'client/core/utils.lua',
+    'client/core/nui.lua',
+    'client/main.lua'
+}
+
+server_scripts {
+    'licensekey.lua',
+    'server/database/schema.lua',
+    'server/database/migrations.lua',
+    'server/database/db.lua',
+    'server/database/connection.lua',
+    'server/database/installer.lua',
+    'server/core/utils.lua',
+    'server/core/logger.lua',
+    'server/core/security.lua',
+    'server/core/permissions.lua',
+    'server/core/events.lua',
+    'server/core/main.lua',
+    'server/framework/framework.lua',
+    'server/framework/qbcore.lua',
+    'server/framework/qbox.lua',
+    'server/framework/esx.lua',
+    'server/framework/vrp.lua',
+    'server/framework/standalone.lua',
+    'server/framework/custom.lua',
+    'server/framework/bridge.lua',
+    'server/api/authentication.lua',
+    'server/api/connection.lua',
+    'server/api/heartbeat.lua',
+    'server/license/integration.lua',
+    'server/housing/housing.lua',
+    'server/phone/phone.lua',
+    'server/economy/manager.lua',
+    'server/vehicles/manager.lua',
+    'server/players/identifiers.lua',
+    'server/players/manager.lua',
+    'server/punishments/manager.lua',
+    'server/reports/manager.lua',
+    'server/resources/manager.lua',
+    'server/staff/manager.lua',
+    'server/logs/audit.lua',
+    'server/updates/github.lua',
+    'server/updates/updater.lua',
+    'server/players.lua',
+    'server/economy.lua',
+    'server/vehicles.lua',
+    'server/world.lua',
+    'server/reports.lua',
+    'server/logs.lua',
+    'server/main.lua'
+}
+
+-- SIKKERHEDSFILER DER ER KRYPTERET OG BESKYTTET:
+-- server/api/*, server/license/*, server/main.lua, client/main.lua, client/core/*, server/core/* (UNDTAGEN server/core/events.lua)
+escrow_ignore {
+    'config.lua',
+    'licensekey.lua',
+    'apiconnect.lua',
+    'README.md',
+    'html/*',
+    'server/core/events.lua',
+    'server/database/*',
+    'server/economy/*',
+    'server/framework/*',
+    'server/housing/*',
+    'server/logs/*',
+    'server/phone/*',
+    'server/players/*',
+    'server/punishments/*',
+    'server/reports/*',
+    'server/resources/*',
+    'server/staff/*',
+    'server/updates/*',
+    'server/vehicles/*',
+    'server/players.lua',
+    'server/economy.lua',
+    'server/vehicles.lua',
+    'server/world.lua',
+    'server/reports.lua',
+    'server/logs.lua'
 }

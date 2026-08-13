@@ -6,36 +6,51 @@
   ██║ ╚═╝ ██║   ██║   ██║ ╚████║╚██████╗
   ╚═╝     ╚═╝   ╚═╝   ╚═╝  ╚═══╝ ╚═════╝
 
-  MTNC AdminPanel v2.5.0 — NovaCore
+  MTNC AdminPanel v3.0.0 — NovaCore & MTCore
   Public Configuration File
 --]]
 
 Config = {}
 
-Config.version = "2.5.0"
+Config.version = "3.0.0"
 
--- ── FRAMEWORK VALG ────────────────────────────────────
+-- ── FRAMEWORK INTEGRATION ────────────────────────────
 -- "auto"       → Detekterer automatisk qb-core, qbx_core, es_extended, vrp
--- "qbcore"     → qb-core (kan tilpasses i framework/qbcore.lua)
--- "qbox"       → qbx_core (kan tilpasses i framework/qbox.lua)
--- "esx"        → es_extended (kan tilpasses i framework/esx.lua)
--- "vrp"        → vrp (kan tilpasses i framework/vrp.lua)
--- "custom"     → Dit eget custom framework (rediger framework/custom.lua)
+-- "qbcore"     → qb-core
+-- "qbox"       → qbx_core
+-- "esx"        → es_extended
+-- "vrp"        → vrp
 -- "standalone" → vanilla FiveM
 Config.framework = "auto"
 
--- ── GENERELT ──────────────────────────────────────────
+-- ── SCRIPT ADAPTER INTEGRATIONER ──────────────────────
+-- 📱 Telefon Integration (Henter automatisk nummer, beskeder & PIN fra databasen)
+Config.Phone = "auto" -- "auto", "lb-phone", "qs-smartphone", "gksphone", "qb-phone", "esx_phone"
+
+-- 🏠 Housing Integration (Henter automatisk ejendomme, ejere, tier & dør-låse)
+Config.Housing = "auto" -- "auto", "esx_property", "qb-houses", "ps-housing", "loaf_housing", "qs-housing"
+
+-- 📦 Inventar Integration (Henter automatisk spillerinventar, stashes, trunks & gloveboxes)
+Config.Inventory = "auto" -- "auto", "ox_inventory", "qb-inventory", "qs-inventory", "esx_inventory"
+
+-- ── CONFIG STAFF OPBYGNING ────────────────────────────
+-- Staff tilføjes uden PIN-krav ved opstart, tildeles automatisk standard PIN "1234"
+Config.Staff = {
+    ["discord:3928192847291823"] = "SUPERADMIN",
+}
+
+-- ── GENERELT & TABLET ──────────────────────────────────
 Config.general = {
-    openCommand = "mtncadmin",     -- Primær kommando (også /mtncmenu og /admin)
-    hotkey      = 104,             -- Numpad 8 (eller konfigurerbar F10)
-    uiTitle     = "MTNC Admin Tablet",
-    closeKey    = 322,             -- ESC
-    notifySound = true,
-    debug       = false
+    openCommand  = "mtncadmin",     -- Primær admin kommando (/admin /tablet)
+    playerTablet = "profile",       -- Åbn spiller-profil for alle spillere via /tablet
+    hotkey       = 104,             -- Numpad 8
+    uiTitle      = "MTNC ADMIN TABLET",
+    closeKey     = 322,             -- ESC
+    notifySound  = true,
+    debug        = false
 }
 
 -- ── DATABASE ──────────────────────────────────────────
--- Bruger automatisk MySQL-forbindelsen fra server.cfg via oxmysql.
 Config.database = {
     driver      = "oxmysql",
     autoInstall = true,
@@ -54,14 +69,21 @@ Config.permissions = {
 
 -- ── KATEGORIER OG HANDLINGER ──────────────────────────
 Config.categories = {
+    dashboard = true,
     players   = true,
     vehicles  = true,
     world     = true,
+    inventory = true,
     economy   = true,
-    staff     = true,
+    tickets   = true,
+    activity  = true,
     logs      = true,
-    reports   = true,
-    resources = true
+    staff     = true,
+    resources = true,
+    developer = true,
+    housing   = true,
+    phone     = true,
+    settings  = true,
 }
 
 Config.weatherTypes = {

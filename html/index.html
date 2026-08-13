@@ -3,241 +3,390 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MTNC Admin Tablet</title>
+  <title>MTNC Tablet V3</title>
   <link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="theme-obsidian">
   <div id="app" class="hidden">
-    <!-- iPad / Tablet Device Frame -->
+    <!-- Hardware iPad Chassis -->
     <div class="tablet-container">
       <div class="tablet-camera"></div>
       
       <div class="tablet-screen">
+        <!-- Tablet Top Status Bar -->
+        <div class="status-bar">
+          <div class="status-left">
+            <span class="carrier">MTNC-NET 5G</span>
+            <span class="wifi-icon">📶</span>
+          </div>
+          <div class="status-center">
+            <span class="clock" id="tablet-clock">12:00</span>
+          </div>
+          <div class="status-right">
+            <span class="node-pill" id="node-info">127.0.0.1:30120</span>
+            <span class="battery">100% 🔋</span>
+          </div>
+        </div>
+
+        <!-- Mode Navigation Bar (Dual Tablet Mode) -->
+        <div class="mode-bar">
+          <button class="mode-btn active" id="mode-profile-btn" data-mode="profile">
+            👤 SPILLER PROFIL
+          </button>
+          <button class="mode-btn admin-mode-btn" id="mode-admin-btn" data-mode="admin">
+            🛡️ ADMINPANEL V3
+          </button>
+        </div>
+
         <!-- Tablet Header Bar -->
         <header class="tablet-header">
           <div class="brand">
             <div class="logo">⚡</div>
             <div>
-              <span class="title">MTNC ADMIN TABLET</span>
-              <span class="subtitle" id="node-info">Node: Forbinder...</span>
+              <span class="title" id="header-title">MTNC TABLET V3</span>
+              <span class="subtitle" id="header-subtitle">Classic Modern Administration · Enterprise Node</span>
             </div>
           </div>
           <div class="header-right">
-            <span class="badge" id="license-badge">🟢 License Active</span>
-            <button class="close-btn" id="close-btn">✕ Luk Tablet</button>
+            <span class="badge" id="license-badge">🟢 ENTERPRISE</span>
+            <button class="close-btn" id="close-btn" title="Luk tablet (ESC)">✕ LUK TABLET</button>
           </div>
         </header>
 
         <!-- Tablet Content Area -->
         <div class="tablet-body">
-          <!-- Sidebar Navigation -->
-          <nav class="sidebar">
-            <button class="nav-item active" data-tab="players">
-              <span class="icon">👥</span> Online Spillere
-            </button>
-            <button class="nav-item" data-tab="actions">
-              <span class="icon">⚡</span> Hurtighandlinger
-            </button>
-            <button class="nav-item" data-tab="analyse">
-              <span class="icon">📊</span> System Analyse
-            </button>
-            <button class="nav-item" data-tab="world">
-              <span class="icon">🌍</span> Verden & Vejr
-            </button>
-            <button class="nav-item" data-tab="logs">
-              <span class="icon">📜</span> Revisionslogs
-            </button>
-            <button class="nav-item" data-tab="sos">
-              <span class="icon">🚨</span> Send SOS Hjælp
-            </button>
-            <button class="nav-item" data-tab="about">
-              <span class="icon">⚙️</span> Om & Udviklere
-            </button>
-          </nav>
+          <!-- MODE 1: REGULAR PLAYER PROFILE VIEW -->
+          <div id="view-profile" class="mode-view">
+            <div class="profile-layout">
+              <!-- Left Profile Card -->
+              <div class="profile-main-card">
+                <div class="avatar-lg">👤</div>
+                <h2 id="prof-name">Thomas Hansen</h2>
+                <span class="prof-tag" id="prof-citizen">CPR: 120498-4421</span>
 
-          <!-- Main View Area -->
-          <main class="main-content">
-            <!-- TAB 1: PLAYERS -->
-            <section id="tab-players" class="tab-page active">
-              <div class="page-header">
-                <div>
-                  <h2>Online Spillere (<span id="player-count">0</span>)</h2>
-                  <p class="section-desc">Administrer, teleporter til, heal eller sanktioner aktive spillere</p>
+                <div class="prof-stat-grid">
+                  <div class="prof-stat">
+                    <span class="lbl">Kontanter</span>
+                    <span class="val green" id="prof-cash">kr. 45.000</span>
+                  </div>
+                  <div class="prof-stat">
+                    <span class="lbl">Bank</span>
+                    <span class="val blue" id="prof-bank">kr. 1.250.000</span>
+                  </div>
+                  <div class="prof-stat">
+                    <span class="lbl">Job &amp; Rang</span>
+                    <span class="val" id="prof-job">Politi · Vicepolitiinspektør</span>
+                  </div>
+                  <div class="prof-stat">
+                    <span class="lbl">Løn</span>
+                    <span class="val" id="prof-salary">kr. 4.500 / 30 min</span>
+                  </div>
                 </div>
-                <button class="btn-refresh" id="refresh-players">🔄 Opdater</button>
-              </div>
-              <div class="table-card">
-                <table class="data-table">
-                  <thead>
-                    <tr>
-                      <th>ID</th>
-                      <th>Navn</th>
-                      <th>Ping</th>
-                      <th>Handlinger</th>
-                    </tr>
-                  </thead>
-                  <tbody id="player-list">
-                    <tr><td colspan="4" class="empty">Henter spillerliste...</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </section>
 
-            <!-- TAB 2: ACTIONS -->
-            <section id="tab-actions" class="tab-page">
-              <div class="page-header">
-                <div>
-                  <h2>Quick Staff Handlinger</h2>
-                  <p class="section-desc">Køretøjer, egen helbred og administrationsværktøjer</p>
+                <div class="pin-display-box">
+                  <span class="pin-icon">🔑</span>
+                  <div>
+                    <span class="pin-title">Din Sikkerheds PIN</span>
+                    <span class="pin-code" id="prof-pin-code">1234</span>
+                  </div>
+                  <button class="pin-change-btn" id="change-pin-btn">Skift PIN</button>
                 </div>
               </div>
-              <div class="grid-cards">
-                <div class="card">
-                  <h3>🚗 Køretøjsstyring</h3>
-                  <div class="form-group" style="margin-top: 10px;">
-                    <label>Spawn Modelnavn</label>
-                    <div style="display: flex; gap: 8px;">
-                      <input type="text" id="veh-model" placeholder="f.eks. adder, sultanrs" class="input-field">
-                      <button class="btn-action" id="btn-spawn-veh">🚗 Spawn</button>
+
+              <!-- Right Tabs: Vehicles, Houses, Licenses, Phone -->
+              <div class="profile-details-card">
+                <div class="sub-tabs">
+                  <button class="sub-tab active" data-subtab="prof-vehicles">🚗 Biler (3)</button>
+                  <button class="sub-tab" data-subtab="prof-houses">🏠 Boliger (1)</button>
+                  <button class="sub-tab" data-subtab="prof-licenses">📜 Licenser</button>
+                  <button class="sub-tab" data-subtab="prof-phone">📱 Telefon</button>
+                </div>
+
+                <div id="prof-vehicles" class="subtab-content active">
+                  <table class="modern-table">
+                    <thead>
+                      <tr>
+                        <th>Køretøj</th>
+                        <th>Nummerplade</th>
+                        <th>Garage</th>
+                        <th>Tilstand</th>
+                      </tr>
+                    </thead>
+                    <tbody id="prof-veh-list">
+                      <tr>
+                        <td>🏎️ Benefactor Schlagen GT</td>
+                        <td><span class="plate-badge">MTNC 888</span></td>
+                        <td>Legion Square Garage</td>
+                        <td><span class="status-green">100% Perfekt</span></td>
+                      </tr>
+                      <tr>
+                        <td>SUV Übermacht Rebla GTS</td>
+                        <td><span class="plate-badge">POL-012</span></td>
+                        <td>Mission Row Garage</td>
+                        <td><span class="status-green">98% God</span></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div id="prof-houses" class="subtab-content hidden">
+                  <table class="modern-table">
+                    <thead>
+                      <tr>
+                        <th>Adresse / Bolig</th>
+                        <th>Type</th>
+                        <th>Dørlås</th>
+                        <th>Nøgler</th>
+                      </tr>
+                    </thead>
+                    <tbody id="prof-house-list">
+                      <tr>
+                        <td>🏠 Alta Street Apt 12</td>
+                        <td>Luksus Lejlighed</td>
+                        <td><span class="status-green">🔒 Låst</span></td>
+                        <td>2 Ejere</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div id="prof-licenses" class="subtab-content hidden">
+                  <div class="badge-grid">
+                    <span class="badge-item active">🚗 Førerkort Bil</span>
+                    <span class="badge-item active">🏍️ Førerkort Motorcykel</span>
+                    <span class="badge-item active">🚛 Førerkort Lastbil</span>
+                    <span class="badge-item active">🔫 Våbentilladelse Klasse A</span>
+                    <span class="badge-item">🛥️ Bådførerbevis</span>
+                  </div>
+                </div>
+
+                <div id="prof-phone" class="subtab-content hidden">
+                  <div class="phone-info-card">
+                    <p>📱 LB-Phone Nummer: <strong>555-4921</strong></p>
+                    <p>🔋 Batteristatus: <strong>100%</strong></p>
+                    <p>💬 Ulæste beskeder: <strong>0</strong></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- MODE 2: FULL ADMIN PANEL FOR STAFF -->
+          <div id="view-admin" class="mode-view hidden">
+            <div class="admin-layout">
+              <nav class="sidebar">
+                <button class="nav-item active" data-tab="dashboard">
+                  <span class="icon">📊</span> Dashboard
+                </button>
+                <button class="nav-item" data-tab="players">
+                  <span class="icon">👥</span> Online Spillere
+                </button>
+                <button class="nav-item" data-tab="vehicles">
+                  <span class="icon">🚗</span> Køretøjer
+                </button>
+                <button class="nav-item" data-tab="map">
+                  <span class="icon">🗺️</span> GTAV Live Map
+                </button>
+                <button class="nav-item" data-tab="inventory">
+                  <span class="icon">📦</span> Inventar
+                </button>
+                <button class="nav-item" data-tab="economy">
+                  <span class="icon">💰</span> Økonomi
+                </button>
+                <button class="nav-item" data-tab="tickets">
+                  <span class="icon">🎫</span> Support Tickets
+                </button>
+                <button class="nav-item" data-tab="activity">
+                  <span class="icon">⚡</span> Aktivitetsfeed
+                </button>
+                <button class="nav-item" data-tab="world">
+                  <span class="icon">🌦️</span> Verden &amp; Vejr
+                </button>
+                <button class="nav-item" data-tab="analyse">
+                  <span class="icon">🖥️</span> System Analyse
+                </button>
+                <button class="nav-item" data-tab="logs">
+                  <span class="icon">📜</span> Revisionslogs
+                </button>
+                <button class="nav-item nav-sos" data-tab="sos">
+                  <span class="icon">🚨</span> Send SOS Alarm
+                </button>
+                <button class="nav-item" data-tab="settings">
+                  <span class="icon">⚙️</span> Indstillinger
+                </button>
+              </nav>
+
+              <main class="main-content">
+                <div id="tab-dashboard" class="tab-pane active">
+                  <div class="kpi-grid">
+                    <div class="kpi-card">
+                      <span class="kpi-label">Online Spillere</span>
+                      <span class="kpi-val blue" id="kpi-players">0 / 128</span>
+                    </div>
+                    <div class="kpi-card">
+                      <span class="kpi-label">Server IP &amp; Port</span>
+                      <span class="kpi-val green" id="kpi-server-ip">127.0.0.1:30120</span>
+                    </div>
+                    <div class="kpi-card">
+                      <span class="kpi-label">Server FPS</span>
+                      <span class="kpi-val" id="kpi-fps">60 FPS</span>
+                    </div>
+                    <div class="kpi-card">
+                      <span class="kpi-label">Din PIN Kode</span>
+                      <span class="kpi-val amber" id="kpi-pin">1234</span>
                     </div>
                   </div>
-                  <div class="btn-row" style="margin-top: 12px; display: flex; gap: 8px;">
-                    <button class="btn-secondary" id="btn-repair-veh">🛠️ Reparer Nærmeste</button>
-                    <button class="btn-danger" id="btn-delete-veh">🗑️ Slet Nærmeste</button>
+
+                  <div class="quick-actions">
+                    <h3>⚡ Hurtighandlinger</h3>
+                    <div class="action-grid">
+                      <button class="btn-action" onclick="quickReviveSelf()">🚑 Genopliv Mig</button>
+                      <button class="btn-action" onclick="quickNoclip()">👻 Noclip</button>
+                      <button class="btn-action" onclick="quickClearArea()">🧹 Rens Område (200m)</button>
+                      <button class="btn-action" onclick="quickSpawnPanto()">🚗 Spawn Panto</button>
+                    </div>
                   </div>
                 </div>
 
-                <div class="card">
-                  <h3>🛡️ Egen Administration & Værktøjer</h3>
-                  <div class="btn-grid">
-                    <button class="btn-toggle" id="btn-toggle-noclip" data-staff="noclip">🦅 Noclip (W/A/S/D)</button>
-                    <button class="btn-toggle" id="btn-toggle-godmode" data-staff="godmode">🛡️ Godmode</button>
-                    <button class="btn-toggle" id="btn-toggle-invisible" data-staff="invisible">👻 Usynlig</button>
-                    <button class="btn-secondary" id="btn-heal-self">💖 Fuld Liv & Armor</button>
+                <div id="tab-players" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>👥 Online Spillere</h2>
+                    <input type="text" id="player-search" class="search-input" placeholder="🔍 Søg spiller, ID, Steam...">
                   </div>
-                </div>
-              </div>
-            </section>
-
-            <!-- TAB 3: ANALYSE -->
-            <section id="tab-analyse" class="tab-page">
-              <div class="page-header">
-                <div>
-                  <h2>📊 System & Sikkerhedsanalyse</h2>
-                  <p class="section-desc">Live diagnose fra <code>apiconnect.lua</code> og API Gatewayen</p>
-                </div>
-                <button class="btn-refresh" id="btn-run-analyse">⚡ Kør Ny Analyse</button>
-              </div>
-              <div class="grid-cards">
-                <div class="card">
-                  <h3 style="color: #60a5fa;">🌐 Server & Licens Helbred</h3>
-                  <div class="analyse-list" id="analyse-server-info" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px; font-size: 0.88rem;">
-                    <div class="info-row"><span>Licens Status</span><span class="status-pill green">🟢 Aktiv & Verificeret</span></div>
-                    <div class="info-row"><span>Licens Tier</span><strong style="color: #60a5fa;" id="ana-tier">ENTERPRISE</strong></div>
-                    <div class="info-row"><span>Database</span><span class="status-pill green">🟢 oxmysql Forbundet</span></div>
-                    <div class="info-row"><span>DDoS Skjold</span><span class="status-pill green">🛡️ Aktivt (90 req/3s)</span></div>
+                  <div class="table-container">
+                    <table class="modern-table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Spillernavn</th>
+                          <th>Ping</th>
+                          <th>Steam Identifier</th>
+                          <th>Handlinger</th>
+                        </tr>
+                      </thead>
+                      <tbody id="player-table-body">
+                      </tbody>
+                    </table>
                   </div>
                 </div>
 
-                <div class="card">
-                  <h3 style="color: #34d399;">⚡ API Gateway Forbindelse</h3>
-                  <div class="analyse-list" style="display: flex; flex-direction: column; gap: 10px; margin-top: 12px; font-size: 0.88rem;">
-                    <div class="info-row"><span>API Host</span><code>api.novacore.dk</code></div>
-                    <div class="info-row"><span>Web Adminpanel</span><code>adminpanel.novacore.dk</code></div>
-                    <div class="info-row"><span>To-vejs Sync</span><span class="status-pill green">🟢 30s Heartbeat Aktiv</span></div>
-                    <div class="info-row"><span>Discord Bot Alarm</span><span class="status-pill green">🟢 Tilsluttet</span></div>
+                <div id="tab-vehicles" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>🚗 Køretøj Værktøj</h2>
+                  </div>
+                  <div class="form-grid">
+                    <input type="text" id="veh-model" class="search-input" placeholder="Modelnavn (f.eks. panto, adder)">
+                    <button class="btn-primary" id="btn-spawn-veh">🚗 Spawn Køretøj</button>
+                    <button class="btn-danger" id="btn-delete-veh">🗑️ Slet Køretøj</button>
+                    <button class="btn-success" id="btn-repair-veh">🔧 Reparer &amp; Vask</button>
                   </div>
                 </div>
-              </div>
-            </section>
 
-            <!-- TAB 4: WORLD -->
-            <section id="tab-world" class="tab-page">
-              <div class="page-header">
-                <div>
-                  <h2>Verden & Server Styring</h2>
-                  <p class="section-desc">Skift vejret globalt eller send servermeddelelser</p>
-                </div>
-              </div>
-              <div class="grid-cards">
-                <div class="card">
-                  <h3>🌤️ Globalt Vejrskifte</h3>
-                  <div class="weather-grid" style="margin-top: 10px;">
-                    <button class="btn-weather" data-weather="CLEAR">☀️ Klart</button>
-                    <button class="btn-weather" data-weather="EXTRASUNNY">🔥 Solskin</button>
-                    <button class="btn-weather" data-weather="RAIN">🌧️ Regn</button>
-                    <button class="btn-weather" data-weather="THUNDER">🌩️ Torden</button>
-                    <button class="btn-weather" data-weather="FOGGY">🌫️ Tåge</button>
-                    <button class="btn-weather" data-weather="OVERCAST">☁️ Overskyet</button>
+                <div id="tab-map" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>🗺️ GTAV Interaktivt Live Map</h2>
+                  </div>
+                  <div class="map-placeholder">
+                    <div class="map-info-box">
+                      📍 Realtime Kort synkroniseret med FiveM API
+                    </div>
                   </div>
                 </div>
-                <div class="card">
-                  <h3>📢 Server Announcement</h3>
-                  <div class="form-group" style="margin-top: 10px;">
-                    <label>Besked til alle spillere</label>
-                    <input type="text" id="announce-msg" placeholder="Skriv besked..." class="input-field">
+
+                <div id="tab-inventory" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>📦 Inventar Management</h2>
                   </div>
-                  <button class="btn-action" id="btn-send-announce" style="margin-top: 12px; width: 100%;">📢 Send Global Besked</button>
+                  <p>Bridge aktiv for ox_inventory / qb-inventory</p>
                 </div>
-              </div>
-            </section>
 
-            <!-- TAB 5: LOGS -->
-            <section id="tab-logs" class="tab-page">
-              <div class="page-header">
-                <div>
-                  <h2>Live Revisionslogs (Audit)</h2>
-                  <p class="section-desc">Seneste staff handlinger og systembegivenheder</p>
+                <div id="tab-economy" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>💰 Server Økonomi</h2>
+                  </div>
+                  <p>Overvågning af kontanter, bank-balance og mistænkelige transaktioner.</p>
                 </div>
-              </div>
-              <div class="log-console" id="log-container">
-                <div class="log-line info">[SYSTEM] MTNC Admin Tablet Forbundet til lokal FiveM klient.</div>
-              </div>
-            </section>
 
-            <!-- TAB 6: SOS -->
-            <section id="tab-sos" class="tab-page">
-              <div class="page-header">
-                <div>
-                  <h2>🚨 Send In-Game SOS til SuperAdmin</h2>
-                  <p class="section-desc">Udløser en prioriteret alarm til Discord SOS-kanalen og Hovedkontoret</p>
+                <div id="tab-tickets" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>🎫 Support Tickets</h2>
+                  </div>
+                  <p>Realtids support chat mellem spillere og staff.</p>
                 </div>
-              </div>
-              <div class="card">
-                <div class="form-group">
-                  <label>Beskrivelse af situationen</label>
-                  <textarea id="sos-text" placeholder="Beskriv problemet, server crash eller behov for support..." class="input-field textarea"></textarea>
-                </div>
-                <button class="btn-danger-lg" id="btn-send-sos" style="margin-top: 14px;">🚨 AFSEND SOS HJÆLPEANMODNING</button>
-              </div>
-            </section>
 
-            <!-- TAB 7: ABOUT -->
-            <section id="tab-about" class="tab-page">
-              <div class="page-header">
-                <div>
-                  <h2>⚙️ Om MTNC Platformen</h2>
+                <div id="tab-activity" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>⚡ Aktivitetsfeed</h2>
+                  </div>
+                  <p>Live hændelser på serveren.</p>
                 </div>
-              </div>
-              <div class="card">
-                <h3 style="color: #60a5fa;">👑 MTNC AdminPanel v2.5.0</h3>
-                <div class="about-grid" style="display: flex; flex-direction: column; gap: 10px; margin-top: 14px; font-size: 0.88rem; color: #cbd5e1;">
-                  <div><strong>Developers:</strong> MrWolfDk / MrGuld</div>
-                  <div><strong>MTCORE Ejer:</strong> MrGuld</div>
-                  <div><strong>NovaCore Ejer:</strong> MrWolfDK</div>
-                  <div><strong>Official GitHub:</strong> <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">mtcore-novacore/mtnc-adminpanel</code></div>
-                  <div><strong>Web Platform:</strong> <code style="background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; color: #38bdf8;">adminpanel.novacore.dk</code></div>
+
+                <div id="tab-world" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>🌦️ Vejr &amp; Tidsstyring</h2>
+                  </div>
+                  <div class="form-grid">
+                    <button class="btn-primary" onclick="setWeather('EXTRASUNNY')">☀️ Solskin</button>
+                    <button class="btn-primary" onclick="setWeather('RAIN')">🌧️ Regn</button>
+                    <button class="btn-primary" onclick="setTime(12, 0)">☀️ Middag 12:00</button>
+                    <button class="btn-primary" onclick="setTime(0, 0)">🌙 Midnat 00:00</button>
+                  </div>
                 </div>
-              </div>
-            </section>
-          </main>
+
+                <div id="tab-analyse" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>🖥️ System &amp; Server IP Analyse</h2>
+                  </div>
+                  <div id="analysis-output" class="info-card">
+                    Venter på analyse-data...
+                  </div>
+                </div>
+
+                <div id="tab-logs" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>📜 Revisionslogs</h2>
+                  </div>
+                  <div class="table-container">
+                    <table class="modern-table">
+                      <thead>
+                        <tr>
+                          <th>Tidspunkt</th>
+                          <th>Handling</th>
+                          <th>Detaljer</th>
+                        </tr>
+                      </thead>
+                      <tbody id="logs-body">
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div id="tab-sos" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>🚨 Send SOS Hovedkontor Alarm</h2>
+                  </div>
+                  <div class="form-grid">
+                    <input type="text" id="sos-subject" class="search-input" placeholder="Emne (f.eks. Akut server nedbrud)">
+                    <textarea id="sos-msg" class="search-input" rows="4" placeholder="Beskriv problemet for Hovedkontoret..."></textarea>
+                    <button class="btn-danger" id="btn-send-sos">🚨 Send SOS Alarm Nu</button>
+                  </div>
+                </div>
+
+                <div id="tab-settings" class="tab-pane hidden">
+                  <div class="pane-header">
+                    <h2>⚙️ Indstillinger &amp; Ophavsret</h2>
+                  </div>
+                  <div class="info-card">
+                    <h3>⚡ MTNC Admin Tablet v3.0.0</h3>
+                    <p>👑 Udviklet af: <strong>MrWolfDk &amp; MrGuld</strong></p>
+                    <p>© 2026 MTNC Platform · NovaCore &amp; MTCore · Alle rettigheder forbeholdes</p>
+                  </div>
+                </div>
+              </main>
+            </div>
+          </div>
         </div>
-
-        <!-- Tablet Home Button Bar -->
-        <footer class="tablet-footer">
-          <div class="home-indicator"></div>
-        </footer>
       </div>
     </div>
   </div>
