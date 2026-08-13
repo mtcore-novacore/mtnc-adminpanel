@@ -8,10 +8,6 @@ if GetResourceState('qb-core') == 'started' then
     QBCore = exports['qb-core']:GetCoreObject()
 end
 
-
-    return {}
-end
-
 function FrameworkAdapter.IsQBCore()
     return QBCore ~= nil
 end
@@ -29,15 +25,15 @@ function FrameworkAdapter.GetCharacterName(src)
 end
 
 function FrameworkAdapter.GetPrimaryJob(src)
-    if not QBCore then return { name = 'unemployed', label = 'Arbejdsløs', grade = 0, gradeLabel = 'Borger', duty = false, salary = 0 } end
+    if not QBCore then return { name = 'unemployed', label = 'Arbejdsloes', grade = 0, gradeLabel = 'Borger', duty = false, salary = 0 } end
     local p = QBCore.Functions.GetPlayer(src)
     if not p or not p.PlayerData or not p.PlayerData.job then
-        return { name = 'unemployed', label = 'Arbejdsløs', grade = 0, gradeLabel = 'Borger', duty = false, salary = 0 }
+        return { name = 'unemployed', label = 'Arbejdsloes', grade = 0, gradeLabel = 'Borger', duty = false, salary = 0 }
     end
     local j = p.PlayerData.job
     return {
         name = j.name or 'unemployed',
-        label = j.label or 'Arbejdsløs',
+        label = j.label or 'Arbejdsloes',
         grade = j.grade and (j.grade.level or j.grade) or 0,
         gradeLabel = j.grade and (j.grade.name or j.gradeLabel) or 'Borger',
         duty = j.onduty or false,
@@ -49,23 +45,22 @@ function FrameworkAdapter.GetJobs(src)
     local primary = FrameworkAdapter.GetPrimaryJob(src)
     local list = { primary }
 
-    -- Support ps-multijob / qb-multijob if database or export exists
-    if QBCore then
-        local p = QBCore.Functions.GetPlayer(src)
-        if p and p.PlayerData and p.PlayerData.citizenid then
-            local cid = p.PlayerData.citizenid
-            local extra = DB.Query('SELECT * FROM user_jobs WHERE citizenid = ?', { cid }) or {}
-            for _, row in ipairs(extra) do
-                if row.job ~= primary.name then
-                    table.insert(list, {
-                        name = row.job,
-                        label = row.job_label or row.job,
-                        grade = row.grade or 0,
-                        gradeLabel = row.grade_label or 'Medarbejder',
-                        duty = false,
-                        salary = row.salary or 0
-                    })
-                end
+    if not QBCore then return list end
+    local p = QBCore.Functions.GetPlayer(src)
+    if not p or not p.PlayerData then return list end
+
+    -- Check if metadata multijob exists (standard modern QBCore)
+    if p.PlayerData.metadata and p.PlayerData.metadata['multijob'] and type(p.PlayerData.metadata['multijob']) == 'table' then
+        for jobName, jobData in pairs(p.PlayerData.metadata['multijob']) do
+            if jobName ~= primary.name then
+                table.insert(list, {
+                    name = jobName,
+                    label = jobData.label or jobName,
+                    grade = jobData.grade or 0,
+                    gradeLabel = jobData.gradeLabel or 'Medarbejder',
+                    duty = false,
+                    salary = jobData.salary or 0
+                })
             end
         end
     end

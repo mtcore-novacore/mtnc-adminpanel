@@ -48,6 +48,7 @@ server_scripts {
 }
 
 client_scripts {
+    'client/admin_features.lua',
     'client/camera.lua',
     'client/notifications.lua',
     'client/tablet.lua',

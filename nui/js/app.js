@@ -97,6 +97,15 @@ const App = {
       } else if (action === 'setReports') {
         this.state.reports = data || [];
         if (this.state.currentApp === 'reports' || this.state.currentApp === 'admin') this.renderCurrentView();
+      } else if (action === 'setAdminStaffList') {
+        this.state.adminStaff = data || [];
+        if (this.state.currentApp === 'admin') this.renderCurrentView();
+      } else if (action === 'setAdminPlayers') {
+        this.state.adminPlayers = data || [];
+        if (this.state.currentApp === 'admin') this.renderCurrentView();
+      } else if (action === 'setAdminVehicleSearch') {
+        this.state.adminVehMatches = data || [];
+        if (this.state.currentApp === 'admin') this.renderCurrentView();
       } else if (action === 'setPinRequests') {
         this.state.pinRequests = data || [];
         if (this.state.currentApp === 'admin') this.renderCurrentView();
@@ -136,6 +145,100 @@ const App = {
   close() {
     this.toggle(false);
     API.post('closeTablet');
+  },
+
+  
+  setAdminTab(tabName) {
+    this.state.adminTab = tabName;
+    if (tabName === 'players') API.post('adminGetPlayers');
+    if (tabName === 'staff') API.post('adminGetStaffList');
+    this.renderCurrentView();
+  },
+
+  refreshAdminData() {
+    API.post('adminGetPlayers');
+    API.post('getReports');
+    API.post('getPinRequests');
+    this.showToast('Opdaterer admin data...', 'info');
+  },
+
+  
+  promptAddStaff() {
+    const ident = prompt('Indtast Spiller Identifier (f.eks. discord:123456, fivem:4866650 eller license:...):');
+    if (!ident || !ident.trim()) return;
+    const name = prompt('Indtast Staff Navn:') || 'Staff';
+    const rank = prompt('Vælg Rang (superadmin, admin, moderator):') || 'moderator';
+    API.post('adminAddStaff', { identifier: ident.trim(), name: name.trim(), rank: rank.trim().toLowerCase() });
+  },
+
+  promptChangeStaffRank(id, name) {
+    const newRank = prompt('Indtast ny rang for ' + name + ' (superadmin, admin, moderator):');
+    if (newRank && newRank.trim()) {
+      API.post('adminUpdateStaffRank', { id: id, rank: newRank.trim().toLowerCase() });
+    }
+  },
+
+  confirmRemoveStaff(id, name) {
+    if (confirm('Er du sikker på, at du vil fjerne ' + name + ' fra Staff?')) {
+      API.post('adminRemoveStaff', { id: id });
+    }
+  },
+
+  promptAnnounce() {
+    const msg = prompt('Indtast servermeddelelse:');
+    if (msg && msg.trim()) {
+      API.post('adminServerAction', { action: 'announce', val1: msg.trim() });
+      this.showToast('📢 Udsendte serverbesked!', 'success');
+    }
+  },
+
+  promptGiveMoney(targetId, name) {
+    const amount = prompt('Indtast beløb der skal gives til ' + name + ':');
+    if (amount && parseInt(amount) > 0) {
+      API.post('adminPlayerAction', { targetSrc: targetId, action: 'giveMoney', val1: 'cash', val2: parseInt(amount) });
+      this.showToast('💰 Gav ' + amount + ' DKK til ' + name, 'success');
+    }
+  },
+
+  promptSetJob(targetId, name) {
+    const job = prompt('Indtast nyt jobnavn for ' + name + ' (f.eks. police, ambulance, mechanic):');
+    if (job && job.trim()) {
+      const grade = prompt('Indtast job rang/grad (f.eks. 0, 1, 2):') || '0';
+      API.post('adminPlayerAction', { targetSrc: targetId, action: 'setJob', val1: job.trim(), val2: parseInt(grade) });
+      this.showToast('👔 Satte job for ' + name + ' til ' + job, 'success');
+    }
+  },
+
+  promptWarnPlayer(targetId, name) {
+    const reason = prompt('Indtast advarselsårsag for ' + name + ':');
+    if (reason && reason.trim()) {
+      API.post('adminPlayerAction', { targetSrc: targetId, action: 'warn', val1: reason.trim() });
+      this.showToast('⚠️ Advarsel sendt til ' + name, 'info');
+    }
+  },
+
+  promptKickPlayer(targetId, name) {
+    const reason = prompt('Indtast årsag til kick af ' + name + ':');
+    if (reason && reason.trim()) {
+      API.post('adminPlayerAction', { targetSrc: targetId, action: 'kick', val1: reason.trim() });
+      this.showToast('👢 Kicket ' + name, 'info');
+    }
+  },
+
+  adminSpawnVehicle() {
+    const input = document.getElementById('adminVehModel');
+    const model = input && input.value ? input.value.trim() : 'adder';
+    API.post('adminVehicleAction', { action: 'spawn', model: model });
+    if (input) input.value = '';
+  },
+
+  adminSearchPlate() {
+    const input = document.getElementById('adminPlateSearch');
+    const plate = input && input.value ? input.value.trim() : '';
+    if (plate) {
+      API.post('adminSearchPlate', { plate: plate });
+      this.showToast('Søger efter nummerplade: ' + plate, 'info');
+    }
   },
 
   openApp(appId) {

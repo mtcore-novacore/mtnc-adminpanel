@@ -1,6 +1,8 @@
 -- ============================================================
--- MTNC ADAPTER — QBOX
+-- MTNC ADAPTER - QBOX
 -- ============================================================
-if GetResourceState('qbx_core') == 'started' then
-    function FrameworkAdapter.IsQbox() return true end
+FrameworkAdapter = FrameworkAdapter or {}
+
+function FrameworkAdapter.IsQBox()
+    return GetResourceState('qbx_core') == 'started'
 end

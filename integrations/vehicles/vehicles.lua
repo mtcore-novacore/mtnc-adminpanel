@@ -1,17 +1,31 @@
 -- ============================================================
 -- MTNC ADAPTER - VEHICLES & LIVE DATABASE OWNERSHIP
 -- ============================================================
-VehicleAdapter = VehicleAdapter or {}
-
-
-    return {}
+DB = DB or {}
+if not DB.Query then
+    function DB.Query(queryStr, params)
+        if MySQL and MySQL.query and MySQL.query.await then
+            local ok, res = pcall(function() return MySQL.query.await(queryStr, params or {}) end)
+            if ok and res then return res end
+        end
+        if exports and exports['oxmysql'] then
+            local p = promise.new()
+            exports['oxmysql']:query(queryStr, params or {}, function(result)
+                p:resolve(result or {})
+            end)
+            return Citizen.Await(p)
+        end
+        return {}
+    end
 end
+
+VehicleAdapter = VehicleAdapter or {}
 
 function VehicleAdapter.GetOwnedVehicles(src)
     local list = {}
     
     -- QBCore Lookup
-    if FrameworkAdapter.IsQBCore() then
+    if FrameworkAdapter and FrameworkAdapter.IsQBCore and FrameworkAdapter.IsQBCore() then
         local p = FrameworkAdapter.GetPlayer(src)
         if p and p.PlayerData and p.PlayerData.citizenid then
             local cid = p.PlayerData.citizenid
@@ -39,7 +53,7 @@ function VehicleAdapter.GetOwnedVehicles(src)
             end
         end
     -- ESX Lookup
-    elseif FrameworkAdapter.IsESX() then
+    elseif FrameworkAdapter and FrameworkAdapter.IsESX and FrameworkAdapter.IsESX() then
         local p = FrameworkAdapter.GetESXPlayer(src)
         if p and p.identifier then
             local rows = DB.Query('SELECT plate, vehicle, stored FROM owned_vehicles WHERE owner = ?', { p.identifier }) or {}
@@ -67,7 +81,7 @@ function VehicleAdapter.LookupPlate(plateQuery)
     local query = '%' .. string.upper(plateQuery) .. '%'
     local results = {}
 
-    if FrameworkAdapter.IsQBCore() then
+    if FrameworkAdapter and FrameworkAdapter.IsQBCore and FrameworkAdapter.IsQBCore() then
         local rows = DB.Query([[
             SELECT pv.plate, pv.vehicle, pv.citizenid, pv.garage, pv.state,
                    CONCAT(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ' ', JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))) as owner_name

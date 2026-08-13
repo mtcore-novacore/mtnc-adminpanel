@@ -100,3 +100,97 @@ end)
 RegisterNetEvent('mtnc:client:receiveUpdates', function(data)
     SendNUIMessage({ action = 'setUpdates', data = data })
 end)
+
+
+-- ============================================================
+-- 🛡️ ADMIN SUITE: NUI CALLBACKS & SERVER SYNC
+-- ============================================================
+RegisterNUICallback('adminGetPlayers', function(data, cb)
+    TriggerServerEvent('mtnc:server:getOnlinePlayers')
+    cb('ok')
+end)
+
+RegisterNUICallback('adminPlayerAction', function(data, cb)
+    TriggerServerEvent('mtnc:server:adminAction', data.targetSrc, data.action, data.val1, data.val2)
+    cb('ok')
+end)
+
+RegisterNUICallback('adminServerAction', function(data, cb)
+    TriggerServerEvent('mtnc:server:serverAction', data.action, data.val1, data.val2)
+    cb('ok')
+end)
+
+RegisterNUICallback('adminSelfAction', function(data, cb)
+    local action = data.action
+    if action == 'noclip' then
+        TriggerEvent('mtnc:client:toggleNoclip')
+    elseif action == 'godmode' then
+        TriggerEvent('mtnc:client:toggleGodmode')
+    elseif action == 'invisible' then
+        TriggerEvent('mtnc:client:toggleInvisible')
+    elseif action == 'superRun' then
+        TriggerEvent('mtnc:client:toggleSuperRun')
+    elseif action == 'tpWaypoint' then
+        TriggerEvent('mtnc:client:tpToWaypoint')
+    elseif action == 'reviveSelf' then
+        TriggerServerEvent('mtnc:server:adminAction', GetPlayerServerId(PlayerId()), 'revive')
+    elseif action == 'healSelf' then
+        TriggerServerEvent('mtnc:server:adminAction', GetPlayerServerId(PlayerId()), 'heal')
+    end
+    cb('ok')
+end)
+
+RegisterNUICallback('adminVehicleAction', function(data, cb)
+    local action = data.action
+    if action == 'repair' then
+        TriggerEvent('mtnc:client:repairVehicle')
+    elseif action == 'tune' then
+        TriggerEvent('mtnc:client:maxTuneVehicle')
+    elseif action == 'refuel' then
+        TriggerEvent('mtnc:client:refuelVehicle')
+    elseif action == 'delete' then
+        TriggerEvent('mtnc:client:deleteCurrentVehicle')
+    elseif action == 'spawn' then
+        TriggerEvent('mtnc:client:spawnVehicleLocal', data.model or 'adder')
+    end
+    cb('ok')
+end)
+
+RegisterNUICallback('adminSearchPlate', function(data, cb)
+    TriggerServerEvent('mtnc:server:searchVehicle', data.plate)
+    cb('ok')
+end)
+
+-- Receive Server Admin Events
+RegisterNetEvent('mtnc:client:receiveOnlinePlayers', function(players)
+    SendNUIMessage({ action = 'setAdminPlayers', data = players })
+end)
+
+RegisterNetEvent('mtnc:client:receiveVehicleSearch', function(matches)
+    SendNUIMessage({ action = 'setAdminVehicleSearch', data = matches })
+end)
+
+
+RegisterNUICallback('adminGetStaffList', function(data, cb)
+    TriggerServerEvent('mtnc:server:getStaffList')
+    cb('ok')
+end)
+
+RegisterNUICallback('adminAddStaff', function(data, cb)
+    TriggerServerEvent('mtnc:server:addStaffMember', data.identifier, data.name, data.rank)
+    cb('ok')
+end)
+
+RegisterNUICallback('adminRemoveStaff', function(data, cb)
+    TriggerServerEvent('mtnc:server:removeStaffMember', data.id)
+    cb('ok')
+end)
+
+RegisterNUICallback('adminUpdateStaffRank', function(data, cb)
+    TriggerServerEvent('mtnc:server:updateStaffRank', data.id, data.rank)
+    cb('ok')
+end)
+
+RegisterNetEvent('mtnc:client:receiveStaffList', function(staff)
+    SendNUIMessage({ action = 'setAdminStaffList', data = staff })
+end)
