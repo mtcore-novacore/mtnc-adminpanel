@@ -22,7 +22,7 @@ function PhoneAdapter.ResetPin(src, newPin)
         -- Official LB Phone PIN reset export / event handling
         local phone = PhoneAdapter.GetPhoneNumber(src)
         if phone then
-            MySQL.update.await('UPDATE phone_phones SET pin = NULL WHERE phone_number = ?', { phone })
+            DB.Update('UPDATE phone_phones SET pin = NULL WHERE phone_number = ?', { phone })
             return true
         end
     end

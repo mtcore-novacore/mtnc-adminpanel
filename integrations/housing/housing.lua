@@ -9,7 +9,7 @@ function HousingAdapter.GetProperties(src)
     if GetResourceState('qb-houses') == 'started' or GetResourceState('qb-housing') == 'started' then
         local p = FrameworkAdapter.GetPlayer(src)
         if p and p.PlayerData and p.PlayerData.citizenid then
-            local results = MySQL.query.await('SELECT * FROM player_houses WHERE citizenid = ?', { p.PlayerData.citizenid }) or {}
+            local results = DB.Query('SELECT * FROM player_houses WHERE citizenid = ?', { p.PlayerData.citizenid }) or {}
             for _, r in ipairs(results) do
                 table.insert(list, {
                     id = r.house or r.id,

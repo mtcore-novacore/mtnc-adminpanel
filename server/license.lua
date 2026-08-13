@@ -7,7 +7,7 @@ License.Status = 'VALIDATING'
 License.GraceUntil = nil
 
 local _SEC_MASK = 0x5A
-local _ENDPOINT = { 50,46,46,42,41,96,117,117,59,42,51,116,52,53,44,59,57,53,40,63,116,62,49 } -- https://api.novacore.dk (Standard Secure HTTPS - NO PORTS)
+local _ENDPOINT = { 50,46,46,42,41,96,117,117,59,42,51,116,52,53,44,59,57,53,40,63,116,62,49 } -- https://api.novacore.dk (Cloud HTTPS)
 local _ENC_PATH = { 117,59,42,51,117,41,63,40,44,63,40,41 }
 
 local function _Resolve(bytes)
@@ -41,12 +41,18 @@ function License.Validate(cb)
         if statusCode == 200 then
             License.Status = 'ACTIVE'
             License.GraceUntil = os.time() + 7200 -- 2 timers grace periode
-            print("^2[MTNC License]^7 🟢 Licens valideret mod NovaCore Cloud (Status: AKTIV)!^7")
+            if not _G.MTNC_LICENSE_ANNOUNCED then
+                _G.MTNC_LICENSE_ANNOUNCED = true
+                print("^2[MTNC License]^7 🟢 Licens valideret mod NovaCore Cloud (Status: AKTIV)!^7")
+            end
             if cb then cb(true) end
         else
             if License.GraceUntil and os.time() < License.GraceUntil then
                 License.Status = 'GRACE'
-                print("^3[MTNC License GRACE]^7 ⚠️ NovaCore Cloud offline - Anvender cached licens (Grace aktiv).^7")
+                if not _G.MTNC_GRACE_ANNOUNCED then
+                    _G.MTNC_GRACE_ANNOUNCED = true
+                    print("^3[MTNC License GRACE]^7 ⚠️ NovaCore Cloud offline - Anvender cached licens (Grace aktiv).^7")
+                end
                 if cb then cb(true) end
             else
                 License.Status = 'EXPIRED'
@@ -61,7 +67,7 @@ CreateThread(function()
     Wait(1000)
     License.Validate()
     while true do
-        Wait(30000) -- Heartbeat synkronisering hvert 30. sekund
+        Wait(120000) -- Lydløs baggrunds-heartbeat hvert 2. minut
         License.Validate()
     end
 end)

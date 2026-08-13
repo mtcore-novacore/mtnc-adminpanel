@@ -25,6 +25,8 @@ shared_scripts {
 }
 
 server_scripts {
+    '@oxmysql/lib/MySQL.lua',
+    'server/db.lua',
     'licensekey.lua',
     'integrations/framework/qbcore.lua',
     'integrations/framework/qbox.lua',

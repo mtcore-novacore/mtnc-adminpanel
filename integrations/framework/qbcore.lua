@@ -1,11 +1,15 @@
 -- ============================================================
--- MTNC ADAPTER — QBCORE
+-- MTNC ADAPTER - QBCORE
 -- ============================================================
 FrameworkAdapter = FrameworkAdapter or {}
 
 local QBCore = nil
 if GetResourceState('qb-core') == 'started' then
     QBCore = exports['qb-core']:GetCoreObject()
+end
+
+
+    return {}
 end
 
 function FrameworkAdapter.IsQBCore()
@@ -50,7 +54,7 @@ function FrameworkAdapter.GetJobs(src)
         local p = QBCore.Functions.GetPlayer(src)
         if p and p.PlayerData and p.PlayerData.citizenid then
             local cid = p.PlayerData.citizenid
-            local extra = MySQL.query.await('SELECT * FROM user_jobs WHERE citizenid = ?', { cid }) or {}
+            local extra = DB.Query('SELECT * FROM user_jobs WHERE citizenid = ?', { cid }) or {}
             for _, row in ipairs(extra) do
                 if row.job ~= primary.name then
                     table.insert(list, {

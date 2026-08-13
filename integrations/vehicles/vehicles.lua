@@ -3,6 +3,10 @@
 -- ============================================================
 VehicleAdapter = VehicleAdapter or {}
 
+
+    return {}
+end
+
 function VehicleAdapter.GetOwnedVehicles(src)
     local list = {}
     
@@ -11,7 +15,7 @@ function VehicleAdapter.GetOwnedVehicles(src)
         local p = FrameworkAdapter.GetPlayer(src)
         if p and p.PlayerData and p.PlayerData.citizenid then
             local cid = p.PlayerData.citizenid
-            local rows = MySQL.query.await('SELECT plate, vehicle, garage, state, fuel, engine, body FROM player_vehicles WHERE citizenid = ?', { cid }) or {}
+            local rows = DB.Query('SELECT plate, vehicle, garage, state, fuel, engine, body FROM player_vehicles WHERE citizenid = ?', { cid }) or {}
             for _, r in ipairs(rows) do
                 local stateLabel = 'Ude paa gaden'
                 if r.state == 1 or r.state == 'garaged' or r.state == 'in' then
@@ -38,7 +42,7 @@ function VehicleAdapter.GetOwnedVehicles(src)
     elseif FrameworkAdapter.IsESX() then
         local p = FrameworkAdapter.GetESXPlayer(src)
         if p and p.identifier then
-            local rows = MySQL.query.await('SELECT plate, vehicle, stored FROM owned_vehicles WHERE owner = ?', { p.identifier }) or {}
+            local rows = DB.Query('SELECT plate, vehicle, stored FROM owned_vehicles WHERE owner = ?', { p.identifier }) or {}
             for _, r in ipairs(rows) do
                 local vehData = json.decode(r.vehicle or '{}')
                 local modelName = vehData.model and tostring(vehData.model) or 'Koeretoey'
@@ -64,7 +68,7 @@ function VehicleAdapter.LookupPlate(plateQuery)
     local results = {}
 
     if FrameworkAdapter.IsQBCore() then
-        local rows = MySQL.query.await([[
+        local rows = DB.Query([[
             SELECT pv.plate, pv.vehicle, pv.citizenid, pv.garage, pv.state,
                    CONCAT(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ' ', JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))) as owner_name
             FROM player_vehicles pv
