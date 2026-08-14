@@ -1,10 +1,24 @@
-/* ============================================================
- * MTNC PROTECTED NUI RUNTIME — nui/js/api.js
- * Copyright (C) 2026 NovaCore & MTCore. All Rights Reserved.
- * ============================================================ */
-(function(){
-  const _0xM = "Ly8gPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09Ci8vIE1UTkMgVEFCTEVUIE9TIHYzLjAuMiDigJQgTlVJIEJSSURHRSAmIEFQSSBDQUxMUwovLyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0KY29uc3QgQVBJID0gewogIGlzRml2ZU06IHR5cGVvZiB3aW5kb3cuaW52b2tlTmF0aXZlICE9PSAndW5kZWZpbmVkJyB8fCB0eXBlb2Ygd2luZG93LkdldFBhcmVudFJlc291cmNlTmFtZSAhPT0gJ3VuZGVmaW5lZCcsCiAgcmVzb3VyY2VOYW1lOiB0eXBlb2Ygd2luZG93LkdldFBhcmVudFJlc291cmNlTmFtZSA9PT0gJ2Z1bmN0aW9uJyA/IHdpbmRvdy5HZXRQYXJlbnRSZXNvdXJjZU5hbWUoKSA6ICdtdG5jLWFkbWlucGFuZWwnLAoKICBhc3luYyBwb3N0KGV2ZW50LCBkYXRhID0ge30pIHsKICAgIGlmICghdGhpcy5pc0ZpdmVNKSB7CiAgICAgIGNvbnNvbGUubG9nKGBbREVWIE1PQ0sgTlVJXSBQT1NUICcke2V2ZW50fSc6YCwgZGF0YSk7CiAgICAgIHJldHVybiB7IHN1Y2Nlc3M6IHRydWUgfTsKICAgIH0KICAgIHRyeSB7CiAgICAgIGNvbnN0IHJlc3AgPSBhd2FpdCBmZXRjaChgaHR0cHM6Ly8ke3RoaXMucmVzb3VyY2VOYW1lfS8ke2V2ZW50fWAsIHsKICAgICAgICBtZXRob2Q6ICdQT1NUJywKICAgICAgICBoZWFkZXJzOiB7ICdDb250ZW50LVR5cGUnOiAnYXBwbGljYXRpb24vanNvbjsgY2hhcnNldD1VVEYtOCcgfSwKICAgICAgICBib2R5OiBKU09OLnN0cmluZ2lmeShkYXRhKQogICAgICB9KTsKICAgICAgcmV0dXJuIGF3YWl0IHJlc3AuanNvbigpOwogICAgfSBjYXRjaCAoZSkgewogICAgICByZXR1cm4geyBlcnJvcjogZS5tZXNzYWdlIH07CiAgICB9CiAgfQp9Owo=";
-  const _0xS = typeof window !== 'undefined' ? atob(_0xM) : Buffer.from(_0xM, 'base64').toString('utf8');
-  const _0xF = new Function(_0xS);
-  _0xF();
-})();
+// ============================================================
+// MTNC TABLET OS v3.0.2 — NUI BRIDGE & API CALLS
+// ============================================================
+const API = {
+  isFiveM: typeof window.invokeNative !== 'undefined' || typeof window.GetParentResourceName !== 'undefined',
+  resourceName: typeof window.GetParentResourceName === 'function' ? window.GetParentResourceName() : 'mtnc-adminpanel',
+
+  async post(event, data = {}) {
+    if (!this.isFiveM) {
+      console.log(`[DEV MOCK NUI] POST '${event}':`, data);
+      return { success: true };
+    }
+    try {
+      const resp = await fetch(`https://${this.resourceName}/${event}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+        body: JSON.stringify(data)
+      });
+      return await resp.json();
+    } catch (e) {
+      return { error: e.message };
+    }
+  }
+};
