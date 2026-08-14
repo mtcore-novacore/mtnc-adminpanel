@@ -25,6 +25,7 @@ shared_scripts {
 }
 
 server_scripts {
+    'server/boss.lua',
     '@oxmysql/lib/MySQL.lua',
     'server/db.lua',
     'licensekey.lua',
@@ -62,5 +63,9 @@ files {
     'nui/js/locales.js',
     'nui/js/api.js',
     'nui/js/apps.js',
-    'nui/js/app.js'
+    'nui/js/app.js',
+    'nui/img/politi_dk_wallpaper.png',
+    'nui/img/politi_dk.png',
+    'nui/img/regionh_dk_wallpaper.png',
+    'nui/img/regionh_dk.png'
 }
