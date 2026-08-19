@@ -68,3 +68,26 @@ RegisterCommand(Config.AdminCommand or 'admin', function()
 end, false)
 
 RegisterKeyMapping(Config.OpenCommand or 'tablet', 'Åbn MTNC Tablet OS', 'keyboard', Config.OpenKey or 'F10')
+
+-- ============================================================
+-- 🔄 CLIENT FRAMEWORK EVENT LISTENERS
+-- ============================================================
+RegisterNetEvent('QBCore:Client:OnPlayerLoaded', function()
+    TriggerServerEvent('mtnc:server:openTablet')
+end)
+
+RegisterNetEvent('esx:playerLoaded', function()
+    TriggerServerEvent('mtnc:server:openTablet')
+end)
+
+RegisterNetEvent('QBCore:Client:OnPlayerUnload', function()
+    if isTabletOpen then
+        ToggleTablet(false)
+    end
+end)
+
+RegisterNetEvent('esx:onPlayerLogout', function()
+    if isTabletOpen then
+        ToggleTablet(false)
+    end
+end)

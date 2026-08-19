@@ -79,9 +79,29 @@ end
 function VehicleAdapter.LookupPlate(plateQuery)
     if not plateQuery or plateQuery == '' then return {} end
     local query = '%' .. string.upper(plateQuery) .. '%'
-    local results = {}
+    local fType = FrameworkAdapter and FrameworkAdapter.GetFrameworkType and FrameworkAdapter.GetFrameworkType() or 'qbcore'
 
-    if FrameworkAdapter and FrameworkAdapter.IsQBCore and FrameworkAdapter.IsQBCore() then
+    if fType == 'esx' then
+        local rows = DB.Query([[
+            SELECT ov.plate, ov.vehicle, ov.owner as citizenid, 'Standard Garage' as garage,
+                   IF(ov.stored = 1, 'I Garage', 'Ude paa gaden') as state,
+                   CONCAT(IFNULL(u.firstname, ''), ' ', IFNULL(u.lastname, '')) as owner_name
+            FROM owned_vehicles ov
+            LEFT JOIN users u ON ov.owner = u.identifier
+            WHERE ov.plate LIKE ? LIMIT 10
+        ]], { query }) or {}
+        return rows
+    elseif fType == 'vrp' then
+        local rows = DB.Query([[
+            SELECT uv.veh_type as vehicle, uv.user_id as citizenid, 'vRP Garage' as garage, 'I Garage' as state,
+                   CONCAT(IFNULL(ui.firstname, ''), ' ', IFNULL(ui.name, '')) as owner_name,
+                   ? as plate
+            FROM vrp_user_vehicles uv
+            LEFT JOIN vrp_user_identities ui ON uv.user_id = ui.user_id
+            LIMIT 10
+        ]], { plateQuery }) or {}
+        return rows
+    else
         local rows = DB.Query([[
             SELECT pv.plate, pv.vehicle, pv.citizenid, pv.garage, pv.state,
                    CONCAT(JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.firstname')), ' ', JSON_UNQUOTE(JSON_EXTRACT(p.charinfo, '$.lastname'))) as owner_name
@@ -91,6 +111,4 @@ function VehicleAdapter.LookupPlate(plateQuery)
         ]], { query }) or {}
         return rows
     end
-
-    return results
 end

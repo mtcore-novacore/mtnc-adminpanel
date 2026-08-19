@@ -5,21 +5,9 @@
 -- ============================================================
 Boss = Boss or {}
 
-local function GetQBCore()
-    if GetResourceState('qb-core') == 'started' then
-        return exports['qb-core']:GetCoreObject()
-    end
-    return nil
-end
-
 function Boss.IsPlayerBoss(src)
-    local QBCore = GetQBCore()
-    if not QBCore then return false end
-    local p = QBCore.Functions.GetPlayer(src)
-    if not p or not p.PlayerData or not p.PlayerData.job then return false end
-    
-    local j = p.PlayerData.job
-    return j.isboss == true or (j.grade and j.grade.name and (string.lower(j.grade.name) == 'boss' or string.lower(j.grade.name) == 'ledelse' or string.lower(j.grade.name) == 'direktør' or string.lower(j.grade.name) == 'chef'))
+    local primary = FrameworkAdapter.GetPrimaryJob(src)
+    return (primary and primary.isBoss == true) or false
 end
 
 -- ============================================================
@@ -67,7 +55,18 @@ function Boss.GetSocietyBalance(jobName)
         end
     end
 
-    -- 5. fd_banking
+    -- 5. esx_addonaccount
+    if not handled and GetResourceState('esx_addonaccount') == 'started' then
+        pcall(function()
+            local row = DB.Query('SELECT money FROM addon_account_data WHERE account_name = ?', { 'society_' .. jobName })
+            if row and row[1] and row[1].money then
+                balance = tonumber(row[1].money) or 0
+                handled = true
+            end
+        end)
+    end
+
+    -- 6. fd_banking
     if not handled and GetResourceState('fd_banking') == 'started' then
         pcall(function()
             local b = exports['fd_banking']:getAccount(jobName)
@@ -75,7 +74,7 @@ function Boss.GetSocietyBalance(jobName)
         end)
     end
 
-    -- 6. Direct Database Fallbacks
+    -- 7. Direct Database Fallbacks
     if not handled then
         pcall(function()
             local row = DB.Query('SELECT amount FROM management_funds WHERE job_name = ?', { jobName })
@@ -147,10 +146,10 @@ function Boss.AddSocietyMoney(src, jobName, amount)
         end)
     end
 
-    -- 5. fd_banking
-    if not success and GetResourceState('fd_banking') == 'started' then
+    -- 5. esx_addonaccount
+    if not success and GetResourceState('esx_addonaccount') == 'started' then
         pcall(function()
-            exports['fd_banking']:addMoney(jobName, amount)
+            DB.Query('UPDATE addon_account_data SET money = money + ? WHERE account_name = ?', { amount, 'society_' .. jobName })
             success = true
         end)
     end
@@ -204,10 +203,10 @@ function Boss.RemoveSocietyMoney(src, jobName, amount)
         end)
     end
 
-    -- 5. fd_banking
-    if not success and GetResourceState('fd_banking') == 'started' then
+    -- 5. esx_addonaccount
+    if not success and GetResourceState('esx_addonaccount') == 'started' then
         pcall(function()
-            exports['fd_banking']:removeMoney(jobName, amount)
+            DB.Query('UPDATE addon_account_data SET money = GREATEST(0, money - ?) WHERE account_name = ?', { amount, 'society_' .. jobName })
             success = true
         end)
     end
@@ -215,7 +214,7 @@ function Boss.RemoveSocietyMoney(src, jobName, amount)
     -- 6. Direct Database Fallback
     if not success then
         pcall(function()
-            DB.Query('UPDATE management_funds SET amount = amount - ? WHERE job_name = ?', { amount, jobName })
+            DB.Query('UPDATE management_funds SET amount = GREATEST(0, amount - ?) WHERE job_name = ?', { amount, jobName })
             success = true
         end)
     end
@@ -225,51 +224,69 @@ end
 
 RegisterNetEvent('mtnc:server:getBossData', function()
     local src = source
-    local QBCore = GetQBCore()
-    if not QBCore then return end
+    local primary = FrameworkAdapter.GetPrimaryJob(src)
+    if not primary or not primary.name then return end
 
-    local p = QBCore.Functions.GetPlayer(src)
-    if not p or not p.PlayerData or not p.PlayerData.job then return end
-
-    local job = p.PlayerData.job
-    local jobName = job.name
+    local jobName = primary.name
     local isBoss = Boss.IsPlayerBoss(src)
-
     local societyBalance = Boss.GetSocietyBalance(jobName)
     local employees = {}
+    local fType = FrameworkAdapter.GetFrameworkType()
 
-    local rows = DB.Query([[
-        SELECT citizenid, charinfo, job
-        FROM players
-        WHERE job LIKE ?
-    ]], { '%"name":"' .. jobName .. '"%' }) or {}
+    if fType == 'esx' then
+        local rows = DB.Query([[
+            SELECT identifier, firstname, lastname, job_grade
+            FROM users
+            WHERE job = ?
+        ]], { jobName }) or {}
 
-    for _, r in ipairs(rows) do
-        local cInfo = json.decode(r.charinfo or '{}')
-        local jInfo = json.decode(r.job or '{}')
-        local empName = (cInfo.firstname or '') .. ' ' .. (cInfo.lastname or '')
-        local gradeName = jInfo.grade and (jInfo.grade.name or jInfo.grade.level) or 'Medarbejder'
-        local gradeLevel = jInfo.grade and (jInfo.grade.level or jInfo.grade) or 0
-        local salary = jInfo.payment or 0
-        local isDuty = jInfo.onduty or false
+        for _, r in ipairs(rows) do
+            local empName = ((r.firstname or '') .. ' ' .. (r.lastname or '')):gsub('^%s*(.-)%s*$', '%1')
+            local gradeLvl = tonumber(r.job_grade) or 0
+            table.insert(employees, {
+                citizenid = r.identifier,
+                name = empName ~= '' and empName or 'Ansat',
+                grade = gradeLvl,
+                gradeName = 'Grad ' .. gradeLvl,
+                salary = 0,
+                onDuty = true,
+                isBoss = (gradeLvl >= 3)
+            })
+        end
+    else
+        local rows = DB.Query([[
+            SELECT citizenid, charinfo, job
+            FROM players
+            WHERE job LIKE ?
+        ]], { '%"name":"' .. jobName .. '"%' }) or {}
 
-        table.insert(employees, {
-            citizenid = r.citizenid,
-            name = empName ~= ' ' and empName or 'Ansat',
-            grade = gradeLevel,
-            gradeName = gradeName,
-            salary = salary,
-            onDuty = isDuty,
-            isBoss = (jInfo.isboss == true)
-        })
+        for _, r in ipairs(rows) do
+            local cInfo = json.decode(r.charinfo or '{}')
+            local jInfo = json.decode(r.job or '{}')
+            local empName = (cInfo.firstname or '') .. ' ' .. (cInfo.lastname or '')
+            local gradeName = jInfo.grade and (jInfo.grade.name or jInfo.grade.level) or 'Medarbejder'
+            local gradeLevel = jInfo.grade and (jInfo.grade.level or jInfo.grade) or 0
+            local salary = jInfo.payment or 0
+            local isDuty = jInfo.onduty or false
+
+            table.insert(employees, {
+                citizenid = r.citizenid,
+                name = empName ~= ' ' and empName or 'Ansat',
+                grade = gradeLevel,
+                gradeName = gradeName,
+                salary = salary,
+                onDuty = isDuty,
+                isBoss = (jInfo.isboss == true)
+            })
+        end
     end
 
     TriggerClientEvent('mtnc:client:receiveBossData', src, {
         isBoss = isBoss,
         job = {
             name = jobName,
-            label = job.label or jobName,
-            grade = job.grade and (job.grade.name or job.grade.level) or 'Boss'
+            label = primary.label or jobName,
+            grade = primary.gradeLabel or 'Boss'
         },
         balance = societyBalance,
         employees = employees
@@ -281,24 +298,21 @@ RegisterNetEvent('mtnc:server:bossDeposit', function(amount)
     local amountNum = tonumber(amount) or 0
     if amountNum <= 0 then return end
 
-    local QBCore = GetQBCore()
-    if not QBCore then return end
-    local p = QBCore.Functions.GetPlayer(src)
-    if not p or not p.PlayerData or not p.PlayerData.job then return end
+    local primary = FrameworkAdapter.GetPrimaryJob(src)
+    if not primary or not primary.name then return end
 
-    local jobName = p.PlayerData.job.name
+    local jobName = primary.name
     if not Boss.IsPlayerBoss(src) then
         TriggerClientEvent('mtnc:client:notify', src, '❌ Kun ledelsen har adgang til firmakontoen.', 'error')
         return
     end
 
-    if (p.PlayerData.money.cash or 0) >= amountNum then
-        p.Functions.RemoveMoney('cash', amountNum, 'Boss Indbetaling')
-        Boss.AddSocietyMoney(src, jobName, amountNum)
-        TriggerClientEvent('mtnc:client:notify', src, '💰 Indsatte ' .. amountNum .. ' DKK på ' .. jobName .. ' kontoen.', 'success')
-        TriggerEvent('mtnc:server:getBossData')
-    elseif (p.PlayerData.money.bank or 0) >= amountNum then
-        p.Functions.RemoveMoney('bank', amountNum, 'Boss Indbetaling')
+    local deducted = FrameworkAdapter.RemoveMoney(src, 'cash', amountNum, 'Boss Indbetaling')
+    if not deducted then
+        deducted = FrameworkAdapter.RemoveMoney(src, 'bank', amountNum, 'Boss Indbetaling')
+    end
+
+    if deducted then
         Boss.AddSocietyMoney(src, jobName, amountNum)
         TriggerClientEvent('mtnc:client:notify', src, '💰 Indsatte ' .. amountNum .. ' DKK på ' .. jobName .. ' kontoen.', 'success')
         TriggerEvent('mtnc:server:getBossData')
@@ -312,12 +326,10 @@ RegisterNetEvent('mtnc:server:bossWithdraw', function(amount)
     local amountNum = tonumber(amount) or 0
     if amountNum <= 0 then return end
 
-    local QBCore = GetQBCore()
-    if not QBCore then return end
-    local p = QBCore.Functions.GetPlayer(src)
-    if not p or not p.PlayerData or not p.PlayerData.job then return end
+    local primary = FrameworkAdapter.GetPrimaryJob(src)
+    if not primary or not primary.name then return end
 
-    local jobName = p.PlayerData.job.name
+    local jobName = primary.name
     if not Boss.IsPlayerBoss(src) then
         TriggerClientEvent('mtnc:client:notify', src, '❌ Kun ledelsen har adgang til firmakontoen.', 'error')
         return
@@ -326,7 +338,7 @@ RegisterNetEvent('mtnc:server:bossWithdraw', function(amount)
     local curBalance = Boss.GetSocietyBalance(jobName)
     if curBalance >= amountNum then
         Boss.RemoveSocietyMoney(src, jobName, amountNum)
-        p.Functions.AddMoney('cash', amountNum, 'Boss Udbetaling')
+        FrameworkAdapter.AddMoney(src, 'cash', amountNum, 'Boss Udbetaling')
         TriggerClientEvent('mtnc:client:notify', src, '💵 Hævede ' .. amountNum .. ' DKK fra ' .. jobName .. ' kontoen.', 'success')
         TriggerEvent('mtnc:server:getBossData')
     else

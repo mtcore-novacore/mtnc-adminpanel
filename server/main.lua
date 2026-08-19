@@ -2,12 +2,10 @@
 -- MTNC ADMIN TABLET v3.0.2 - MASTER PS-ADMIN & QB-ADMIN SUITE
 -- ============================================================
 
-local function GetQBCore()
-    if GetResourceState('qb-core') == 'started' then
-        return exports['qb-core']:GetCoreObject()
-    end
-    return nil
-end
+CreateThread(function()
+    local fType = FrameworkAdapter.GetFrameworkType()
+    print('^2[MTNC Admin Panel]^7 Initialiseret succesfuldt (Aktivt Framework: ^3' .. string.upper(fType) .. '^7)!')
+end)
 
 RegisterNetEvent('mtnc:server:openTablet', function()
     local src = source
@@ -66,29 +64,23 @@ RegisterNetEvent('mtnc:server:getOnlinePlayers', function()
     if not Permissions.HasPermission(src, 'admin.access') then return end
 
     local players = {}
-    local QBCore = GetQBCore()
+    local fType = FrameworkAdapter.GetFrameworkType()
 
     for _, playerId in ipairs(GetPlayers()) do
         local pSrc = tonumber(playerId)
         local pName = GetPlayerName(pSrc)
         local ping = GetPlayerPing(pSrc)
-        local charName = pName
-        local jobName, gradeLabel = 'unemployed', 'Borger'
+        local charName = FrameworkAdapter.GetCharacterName(pSrc)
+        local citizenid = FrameworkAdapter.GetCitizenId(pSrc)
+        local primaryJob = FrameworkAdapter.GetPrimaryJob(pSrc)
+        local jobName = primaryJob.label or primaryJob.name or 'unemployed'
+        local gradeLabel = primaryJob.gradeLabel or 'Borger'
         local gangName, gangGrade = 'none', 'Ingen'
         local cash, bank, crypto = 0, 0, 0
-        local citizenid = 'N/A'
 
-        if QBCore then
-            local p = QBCore.Functions.GetPlayer(pSrc)
+        if fType == 'qbcore' or fType == 'qbox' then
+            local p = FrameworkAdapter.GetPlayer(pSrc)
             if p and p.PlayerData then
-                citizenid = p.PlayerData.citizenid or 'N/A'
-                if p.PlayerData.charinfo then
-                    charName = (p.PlayerData.charinfo.firstname or '') .. ' ' .. (p.PlayerData.charinfo.lastname or '')
-                end
-                if p.PlayerData.job then
-                    jobName = p.PlayerData.job.label or p.PlayerData.job.name
-                    gradeLabel = p.PlayerData.job.grade and (p.PlayerData.job.grade.name or p.PlayerData.job.grade.level) or 'Medarbejder'
-                end
                 if p.PlayerData.gang then
                     gangName = p.PlayerData.gang.label or p.PlayerData.gang.name or 'Ingen'
                     gangGrade = p.PlayerData.gang.grade and (p.PlayerData.gang.grade.name or p.PlayerData.gang.grade.level) or 'Medlem'
@@ -98,6 +90,20 @@ RegisterNetEvent('mtnc:server:getOnlinePlayers', function()
                     bank = p.PlayerData.money.bank or 0
                     crypto = p.PlayerData.money.crypto or 0
                 end
+            end
+        elseif fType == 'esx' then
+            local xPlayer = FrameworkAdapter.GetESXPlayer(pSrc)
+            if xPlayer then
+                cash = xPlayer.getMoney and xPlayer.getMoney() or 0
+                local bAcc = xPlayer.getAccount and xPlayer.getAccount('bank')
+                bank = bAcc and bAcc.money or 0
+            end
+        elseif fType == 'vrp' then
+            local vRP = exports and exports['vrp'] and exports['vrp']:getInterface("vRP")
+            local userId = FrameworkAdapter.GetVRPUserId(pSrc)
+            if userId and vRP then
+                cash = vRP.getMoney({userId}) or 0
+                bank = vRP.getBankMoney({userId}) or 0
             end
         end
 
@@ -156,7 +162,6 @@ RegisterNetEvent('mtnc:server:adminAction', function(targetSrc, action, val1, va
         return
     end
 
-    local QBCore = GetQBCore()
     local targetPed = GetPlayerPed(targetSrc)
 
     if action == 'kick' then
@@ -195,26 +200,15 @@ RegisterNetEvent('mtnc:server:adminAction', function(targetSrc, action, val1, va
         end
         Audit.Log('PLAYER_INTO_VEHICLE', src, targetSrc, {})
     elseif action == 'revive' then
-        if QBCore then
-            TriggerClientEvent('hospital:client:Revive', targetSrc)
-        end
+        FrameworkAdapter.RevivePlayer(targetSrc)
         TriggerClientEvent('mtnc:client:notify', targetSrc, '💉 Du blev genoplivet af Staff.', 'success')
         Audit.Log('PLAYER_REVIVE', src, targetSrc, {})
     elseif action == 'kill' then
-        if QBCore then
-            TriggerClientEvent('hospital:client:KillPlayer', targetSrc)
-        end
+        FrameworkAdapter.KillPlayer(targetSrc)
         TriggerClientEvent('mtnc:client:notify', targetSrc, '💀 Du blev draebt af Staff.', 'error')
         Audit.Log('PLAYER_KILL', src, targetSrc, {})
     elseif action == 'heal' then
-        if QBCore then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                p.Functions.SetMetaData('hunger', 100)
-                p.Functions.SetMetaData('thirst', 100)
-            end
-        end
-        TriggerClientEvent('hospital:client:HealPlayer', targetSrc)
+        FrameworkAdapter.HealPlayer(targetSrc)
         TriggerClientEvent('mtnc:client:notify', targetSrc, '🩹 Dit helbred og status blev genopfyldt.', 'success')
         Audit.Log('PLAYER_HEAL', src, targetSrc, {})
     elseif action == 'openInventory' then
@@ -222,19 +216,16 @@ RegisterNetEvent('mtnc:server:adminAction', function(targetSrc, action, val1, va
             exports['qb-inventory']:OpenInventoryById(src, targetSrc)
         elseif GetResourceState('ps-inventory') == 'started' then
             exports['ps-inventory']:OpenInventoryById(src, targetSrc)
+        elseif GetResourceState('ox_inventory') == 'started' then
+            exports.ox_inventory:openInventory(src, 'player', targetSrc)
         else
             TriggerClientEvent('mtnc:client:notify', src, '❌ Inventory ressource ikke aktiv på serveren.', 'error')
         end
         Audit.Log('PLAYER_OPEN_INVENTORY', src, targetSrc, {})
     elseif action == 'clearInventory' then
-        if QBCore then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                p.Functions.ClearInventory()
-                TriggerClientEvent('mtnc:client:notify', targetSrc, '🧹 Dit inventory blev toemt af Staff.', 'info')
-                TriggerClientEvent('mtnc:client:notify', src, '🧹 Spillerens inventory blev toemt.', 'success')
-            end
-        end
+        FrameworkAdapter.ClearInventory(targetSrc)
+        TriggerClientEvent('mtnc:client:notify', targetSrc, '🧹 Dit inventory blev toemt af Staff.', 'info')
+        TriggerClientEvent('mtnc:client:notify', src, '🧹 Spillerens inventory blev toemt.', 'success')
         Audit.Log('PLAYER_CLEAR_INVENTORY', src, targetSrc, {})
     elseif action == 'openClothing' then
         if GetResourceState('qb-clothing') == 'started' then
@@ -243,6 +234,8 @@ RegisterNetEvent('mtnc:server:adminAction', function(targetSrc, action, val1, va
             TriggerClientEvent('illenium-appearance:client:openClothingShopMenu', targetSrc)
         elseif GetResourceState('fivem-appearance') == 'started' then
             TriggerClientEvent('fivem-appearance:client:openClothingShopMenu', targetSrc)
+        elseif GetResourceState('esx_skin') == 'started' then
+            TriggerClientEvent('esx_skin:openSaveableMenu', targetSrc)
         end
         TriggerClientEvent('mtnc:client:notify', src, '👕 Aabnede toejmenu for spilleren.', 'success')
         Audit.Log('PLAYER_OPEN_CLOTHING', src, targetSrc, {})
@@ -256,51 +249,35 @@ RegisterNetEvent('mtnc:server:adminAction', function(targetSrc, action, val1, va
             mType = val1
             amount = tonumber(val2) or 0
         end
-        if QBCore and amount > 0 then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                p.Functions.AddMoney(mType, amount, 'MTNC Staff Grant')
-                TriggerClientEvent('mtnc:client:notify', targetSrc, '💰 Modtog ' .. amount .. ' DKK fra Staff.', 'success')
-                Audit.Log('GIVE_MONEY', src, targetSrc, { type = mType, amount = amount })
-            end
+        if amount > 0 then
+            FrameworkAdapter.AddMoney(targetSrc, mType, amount, 'MTNC Staff Grant')
+            TriggerClientEvent('mtnc:client:notify', targetSrc, '💰 Modtog ' .. amount .. ' DKK fra Staff.', 'success')
+            TriggerClientEvent('mtnc:client:notify', src, '💰 Gav ' .. amount .. ' DKK til spilleren.', 'success')
+            Audit.Log('GIVE_MONEY', src, targetSrc, { type = mType, amount = amount })
         end
     elseif action == 'giveItem' then
         local item = val1 or 'water_bottle'
         local amount = tonumber(val2) or 1
-        if QBCore and item then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                p.Functions.AddItem(item, amount)
-                if QBCore.Shared and QBCore.Shared.Items and QBCore.Shared.Items[item] then
-                    TriggerClientEvent('inventory:client:ItemBox', targetSrc, QBCore.Shared.Items[item], 'add')
-                end
-                TriggerClientEvent('mtnc:client:notify', targetSrc, '🎁 Modtog ' .. amount .. 'x ' .. item .. ' fra Staff.', 'success')
-                TriggerClientEvent('mtnc:client:notify', src, '🎁 Gav ' .. amount .. 'x ' .. item .. ' til spilleren.', 'success')
-                Audit.Log('GIVE_ITEM', src, targetSrc, { item = item, amount = amount })
-            end
+        if item then
+            FrameworkAdapter.AddItem(targetSrc, item, amount)
+            TriggerClientEvent('mtnc:client:notify', targetSrc, '🎁 Modtog ' .. amount .. 'x ' .. item .. ' fra Staff.', 'success')
+            TriggerClientEvent('mtnc:client:notify', src, '🎁 Gav ' .. amount .. 'x ' .. item .. ' til spilleren.', 'success')
+            Audit.Log('GIVE_ITEM', src, targetSrc, { item = item, amount = amount })
         end
     elseif action == 'setJob' then
         local jobName = val1 or 'police'
         local grade = tonumber(val2) or 0
-        if QBCore then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                p.Functions.SetJob(jobName, grade)
-                TriggerClientEvent('mtnc:client:notify', targetSrc, '👔 Dit job blev aendret til: ' .. jobName .. ' (Grad: ' .. grade .. ')', 'info')
-                Audit.Log('SET_JOB', src, targetSrc, { job = jobName, grade = grade })
-            end
-        end
+        FrameworkAdapter.SetJob(targetSrc, jobName, grade)
+        TriggerClientEvent('mtnc:client:notify', targetSrc, '👔 Dit job blev aendret til: ' .. jobName .. ' (Grad: ' .. grade .. ')', 'info')
+        TriggerClientEvent('mtnc:client:notify', src, '👔 Sattes job til: ' .. jobName .. ' (Grad: ' .. grade .. ')', 'success')
+        Audit.Log('SET_JOB', src, targetSrc, { job = jobName, grade = grade })
     elseif action == 'setGang' then
         local gangName = val1 or 'ballas'
         local grade = tonumber(val2) or 0
-        if QBCore then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                p.Functions.SetGang(gangName, grade)
-                TriggerClientEvent('mtnc:client:notify', targetSrc, '🔫 Din bande blev aendret til: ' .. gangName .. ' (Grad: ' .. grade .. ')', 'info')
-                Audit.Log('SET_GANG', src, targetSrc, { gang = gangName, grade = grade })
-            end
-        end
+        FrameworkAdapter.SetGang(targetSrc, gangName, grade)
+        TriggerClientEvent('mtnc:client:notify', targetSrc, '🔫 Din bande blev aendret til: ' .. gangName .. ' (Grad: ' .. grade .. ')', 'info')
+        TriggerClientEvent('mtnc:client:notify', src, '🔫 Sattes bande til: ' .. gangName .. ' (Grad: ' .. grade .. ')', 'success')
+        Audit.Log('SET_GANG', src, targetSrc, { gang = gangName, grade = grade })
     -- PS-ADMINMENU TROLL TOOLS
     elseif action == 'setFire' then
         TriggerClientEvent('mtnc:client:setTargetFire', targetSrc)
@@ -337,22 +314,7 @@ RegisterNetEvent('mtnc:server:adminAction', function(targetSrc, action, val1, va
     elseif action == 'giveWeapon' then
         local weaponName = tostring(val1 or 'weapon_combatpistol'):lower()
         local ammoCount = tonumber(val2) or 250
-        if QBCore then
-            local p = QBCore.Functions.GetPlayer(targetSrc)
-            if p then
-                local serie = tostring((QBCore.Shared and QBCore.Shared.RandomInt and QBCore.Shared.RandomInt(2)) or 11) .. tostring((QBCore.Shared and QBCore.Shared.RandomStr and QBCore.Shared.RandomStr(3)) or 'ABC')
-                local info = {
-                    serie = serie,
-                    ammo = ammoCount,
-                    quality = 100
-                }
-                p.Functions.AddItem(weaponName, 1, false, info)
-                if QBCore.Shared and QBCore.Shared.Items and QBCore.Shared.Items[weaponName] then
-                    TriggerClientEvent('inventory:client:ItemBox', targetSrc, QBCore.Shared.Items[weaponName], 'add')
-                end
-            end
-        end
-        TriggerClientEvent('mtnc:client:giveWeaponLocal', targetSrc, weaponName, ammoCount)
+        FrameworkAdapter.GiveWeapon(targetSrc, weaponName, ammoCount)
         TriggerClientEvent('mtnc:client:notify', targetSrc, '🔫 Modtog ' .. string.upper(weaponName) .. ' med ' .. ammoCount .. ' skud fra Staff.', 'success')
         TriggerClientEvent('mtnc:client:notify', src, '🔫 Gav ' .. string.upper(weaponName) .. ' (' .. ammoCount .. ' skud) til ID: ' .. targetSrc, 'success')
         Audit.Log('PLAYER_GIVE_WEAPON', src, targetSrc, { weapon = weaponName, ammo = ammoCount })
@@ -412,31 +374,7 @@ RegisterNetEvent('mtnc:server:saveCarToGarage', function(mods, modelName, hash, 
     local src = source
     if not Permissions.HasPermission(src, 'admin.access') then return end
 
-    local QBCore = GetQBCore()
-    if QBCore then
-        local Player = QBCore.Functions.GetPlayer(src)
-        if Player then
-            local cleanPlate = string.upper(plate or 'ADMIN')
-            DB.Query("SELECT plate FROM player_vehicles WHERE plate = ?", { cleanPlate }, function(res)
-                if not res or #res == 0 then
-                    DB.Query([[
-                        INSERT INTO player_vehicles (license, citizenid, vehicle, hash, mods, plate, state)
-                        VALUES (?, ?, ?, ?, ?, ?, 0)
-                    ]], {
-                        Player.PlayerData.license,
-                        Player.PlayerData.citizenid,
-                        modelName,
-                        hash,
-                        json.encode(mods or {}),
-                        cleanPlate
-                    })
-                    TriggerClientEvent('mtnc:client:notify', src, '🚗 Koeretoey med plade ' .. cleanPlate .. ' er gemt i din garage!', 'success')
-                else
-                    TriggerClientEvent('mtnc:client:notify', src, '⚠️ Nummerplade ' .. cleanPlate .. ' eksisterer allerede i databasen.', 'error')
-                end
-            end)
-        end
-    end
+    FrameworkAdapter.SaveCarToGarage(src, mods, modelName, hash, plate)
     Audit.Log('SAVE_ADMIN_CAR', src, 0, { plate = plate, model = modelName })
 end)
 
@@ -453,9 +391,11 @@ RegisterNetEvent('mtnc:server:serverAction', function(action, val1, val2)
         TriggerClientEvent('mtnc:client:broadcastAnnouncement', -1, msg, sender)
         Audit.Log('SERVER_ANNOUNCE', src, 0, { message = msg, author = sender })
     elseif action == 'reviveAll' then
-        local QBCore = GetQBCore()
-        if QBCore then
-            TriggerClientEvent('hospital:client:Revive', -1)
+        for _, playerId in ipairs(GetPlayers()) do
+            local pSrc = tonumber(playerId)
+            if pSrc and pSrc > 0 then
+                FrameworkAdapter.RevivePlayer(pSrc)
+            end
         end
         TriggerClientEvent('mtnc:client:notify', -1, '⚡ Alle spillere paa serveren er blevet genoplivet af Staff.', 'success')
         Audit.Log('REVIVE_ALL', src, 0, {})

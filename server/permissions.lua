@@ -57,25 +57,44 @@ function Permissions.GetPlayerRole(src)
         return 'moderator'
     end
 
-    -- 2. Automatic QBCore Permissions & Groups Detection
-    local QBCore = GetQBCore()
-    if QBCore then
-        if QBCore.Functions.HasPermission(src, 'god') then
-            return 'superadmin'
-        elseif QBCore.Functions.HasPermission(src, 'admin') then
-            return 'superadmin'
-        elseif QBCore.Functions.HasPermission(src, 'mod') then
-            return 'moderator'
-        end
+    -- 2. Automatic Framework Permissions (QBCore / Qbox / ESX / vRP)
+    local fType = FrameworkAdapter.GetFrameworkType()
+    if fType == 'qbcore' or fType == 'qbox' then
+        local QBCore = GetQBCore()
+        if QBCore then
+            if QBCore.Functions.HasPermission(src, 'god') or QBCore.Functions.HasPermission(src, 'admin') then
+                return 'superadmin'
+            elseif QBCore.Functions.HasPermission(src, 'mod') then
+                return 'moderator'
+            end
 
-        local p = QBCore.Functions.GetPlayer(src)
-        if p and p.PlayerData then
-            if p.PlayerData.permissions then
+            local p = QBCore.Functions.GetPlayer(src)
+            if p and p.PlayerData and p.PlayerData.permissions then
                 if p.PlayerData.permissions['god'] or p.PlayerData.permissions['admin'] then
                     return 'superadmin'
                 elseif p.PlayerData.permissions['mod'] then
                     return 'moderator'
                 end
+            end
+        end
+    elseif fType == 'esx' then
+        local xPlayer = FrameworkAdapter.GetESXPlayer(src)
+        if xPlayer and xPlayer.getGroup then
+            local grp = string.lower(xPlayer.getGroup())
+            if grp == 'superadmin' or grp == 'god' or grp == 'owner' or grp == 'admin' then
+                return 'superadmin'
+            elseif grp == 'mod' or grp == 'moderator' or grp == 'support' or grp == 'trial' then
+                return 'moderator'
+            end
+        end
+    elseif fType == 'vrp' then
+        local vRP = exports and exports['vrp'] and exports['vrp']:getInterface("vRP")
+        local userId = FrameworkAdapter.GetVRPUserId(src)
+        if userId and vRP then
+            if vRP.hasGroup({userId, "superadmin"}) or vRP.hasGroup({userId, "admin"}) or vRP.hasGroup({userId, "owner"}) then
+                return 'superadmin'
+            elseif vRP.hasGroup({userId, "mod"}) or vRP.hasGroup({userId, "moderator"}) then
+                return 'moderator'
             end
         end
     end

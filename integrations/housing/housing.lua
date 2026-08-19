@@ -23,8 +23,23 @@ HousingAdapter = HousingAdapter or {}
 
 function HousingAdapter.GetProperties(src)
     local list = {}
-    -- Auto-detect qb-housing, loaf_housing, or esx_property
-    if GetResourceState('qb-houses') == 'started' or GetResourceState('qb-housing') == 'started' then
+    local fType = FrameworkAdapter and FrameworkAdapter.GetFrameworkType and FrameworkAdapter.GetFrameworkType() or 'qbcore'
+
+    if fType == 'esx' then
+        local p = FrameworkAdapter.GetESXPlayer(src)
+        if p and p.identifier then
+            local results = DB.Query('SELECT * FROM owned_properties WHERE owner = ?', { p.identifier }) or {}
+            for _, r in ipairs(results) do
+                table.insert(list, {
+                    id = r.id or r.name or 'Ejendom',
+                    label = r.name or r.label or 'Ejendom',
+                    address = r.name or 'Bygning',
+                    tier = 1,
+                    hasKeys = true
+                })
+            end
+        end
+    else
         local p = FrameworkAdapter.GetPlayer(src)
         if p and p.PlayerData and p.PlayerData.citizenid then
             local results = DB.Query('SELECT * FROM player_houses WHERE citizenid = ?', { p.PlayerData.citizenid }) or {}
